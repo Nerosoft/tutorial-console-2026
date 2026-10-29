@@ -1,0 +1,25 @@
+{
+  "admin": {
+    "language": "english",
+    "style": "light",
+    "culc": {
+      "abcd": {
+        "total": "200",
+        "value": {
+          "ab12": "100",
+          "cd43": "+",
+          "md21": "100"
+        }
+      }
+    },
+    "light": {
+
+    },
+    "english": {
+
+    },
+    "france": {
+
+    }
+  }
+}
