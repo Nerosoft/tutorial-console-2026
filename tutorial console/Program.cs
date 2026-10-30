@@ -16,30 +16,50 @@ namespace tutorial_console
 {
     internal class MyClass
     {
+
+        JsonNode json;
         string state;
         Dictionary<string, List<string>> myculc = new Dictionary<string, List<string>>();
-        List<string> AddSearchculc = new List<string>() { Guid.NewGuid().ToString("N").Substring(0, 3), "??" };
+        List<string> AddSearchculc;
         string option { get; set; }
         public MyClass(string state, MyClass select = null)
         {
             this.state = state;
             if (state == "select")
             {
-                JsonNode json = JsonNode.Parse(File.ReadAllText("data.json"));
-                //Dictionary<string, Dictionary<string, string>> dic = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(json["admin"]["culc"]);
-                //myculc = dic.Select(x => new List<string> (x.Value.Select(y => y.Value)).Prepend(x.Key).ToList()).ToList();
+                json = JsonNode.Parse(File.ReadAllText("data.json"));
                 myculc = JsonSerializer.Deserialize<Dictionary<string, List<string>>>(json["admin"]["culc"]);
             }
             //for edit item
             else if (select != null)
             {
                 option = "operation";
-                //myculc.Add(makeId(), select.getCulc()[state]);
+                AddSearchculc = select.getCulc()[state].Prepend(state).ToList();
             }
             else if (state == "search" || state == "add")
+            {
                 option = "number";
+                AddSearchculc = new List<string>() { makeId(), "??" };
+            }
         }
-        string makeId()
+        public void saveCulcDataBase(MyClass obj)
+        {
+            json["admin"]["culc"][obj.getAddsearch().First()] =
+                JsonSerializer.SerializeToNode(
+                    obj.getAddsearch().Skip(1),
+                    new JsonSerializerOptions
+                    {
+                        WriteIndented = true,
+                        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                    });
+            File.WriteAllText("data.json", json.ToJsonString(
+                new JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                }));
+        }
+        public string makeId()
         {
             return Guid.NewGuid().ToString("N").Substring(0, 3);
         }
@@ -70,13 +90,9 @@ namespace tutorial_console
         public void resetCulc()
         {
             option = "number";
-            var id = AddSearchculc.First();
             AddSearchculc.Clear();
-            AddSearchculc.Add(id);
+            AddSearchculc.Add(this.makeId());
             AddSearchculc.Add("??");
-            //myculc = new List<List<string>> {
-            //        new List<string> { new MyClass("select").getCulc().Find(x => x[0].Equals(state)) != null? state : (state == "search"?"??":Guid.NewGuid().ToString("N").Substring(0,3)) ,"??"}
-            //    };
         }
         public void setCulc(List<string> culc)
         {
@@ -117,22 +133,7 @@ namespace tutorial_console
                     string confirem = Console.ReadLine();
                     if (state == "add" && confirem == "y")
                     {
-                        JsonNode json = JsonNode.Parse(File.ReadAllText("data.json"));
-                        json["admin"]["culc"][CulcClass.getAddsearch().First()] =
-                            JsonSerializer.SerializeToNode(
-                                CulcClass.getAddsearch().Skip(1),
-                                new JsonSerializerOptions
-                                {
-                                    WriteIndented = true,
-                                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-                                });
-                        File.WriteAllText("data.json", json.ToJsonString(
-                            new JsonSerializerOptions
-                            {
-                                WriteIndented = true,
-                                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-                            }));
-
+                        SelectCucl.saveCulcDataBase(CulcClass);
                         Console.WriteLine("Successfully add item");
                         CulcClass.resetCulc();
                     }
@@ -153,7 +154,7 @@ namespace tutorial_console
                     }
 
                 }
-                else if(state == "add" || state == "search" || CulcClass.getCulc().Where(x=>x.Key == state)!= null)
+                else if(state == "add" || state == "search" || SelectCucl.getCulc().Where(x=>x.Key == state)!= null)
                 {
                     CulcClass = InitMyClass();
                     Console.Write(CulcClass.getOption() == "operation" ? "Enter your operator ? " : "Enter your number ? ");
@@ -237,12 +238,12 @@ namespace tutorial_console
                     showTable(AddCulc.getAddsearch(), "welcome in add table");
                     return AddCulc;
                 case "select":
-                    SelectCucl = new MyClass(state);
+                    SelectCucl = SelectCucl??new MyClass(state);
                     showTable(SelectCucl.getCulc());
                     return SelectCucl;
                 case "search":
-                    showTable(SelectCucl.getCulc());
                     SearchCulc = SearchCulc ?? new MyClass(state);
+                    showTable(SelectCucl.getCulc());
 
                     //if (SearchCulc.getCulc()[0].Count > 2)
                     //{
