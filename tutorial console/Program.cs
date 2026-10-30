@@ -28,12 +28,10 @@ namespace tutorial_console
             this.state = state;
             HelpMessage = helpMessage;
             TableTitlt = tableTitlt;
-
+            json = JsonNode.Parse(File.ReadAllText("data.json"));
             if (state == "select")
-            {
-                json = JsonNode.Parse(File.ReadAllText("data.json"));
                 myculc = JsonSerializer.Deserialize<Dictionary<string, List<string>>>(json["admin"]["culc"]);
-            }
+            
             //for edit item
             else if (select != null)
             {
@@ -57,14 +55,7 @@ namespace tutorial_console
         }
         public void saveCulcDataBase(MyClass obj)
         {
-            json["admin"]["culc"][obj.getAddsearch().First()] =
-                JsonSerializer.SerializeToNode(
-                    obj.getAddsearch().Skip(1),
-                    new JsonSerializerOptions
-                    {
-                        WriteIndented = true,
-                        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-                    });
+            json["admin"]["culc"].AsObject()[obj.getAddsearch().First()] =  JsonSerializer.SerializeToNode(obj.getAddsearch().Skip(1));
             File.WriteAllText("data.json", json.ToJsonString(
                 new JsonSerializerOptions
                 {
@@ -98,23 +89,30 @@ namespace tutorial_console
         }
         public void addValueList(string number)
         {
+            if (state == "search")
+                AddSearchculc[AddSearchculc.Count - 1] = "??";
             AddSearchculc.Insert(AddSearchculc.Count-1, number);
         }
         public void resetCulc()
         {
             option = "number";
-            AddSearchculc.Clear();
-            AddSearchculc.Add(this.makeId());
+            string id = state == "add"? this.makeId() : (state == "search"?"??": AddSearchculc.First());
+            AddSearchculc.Clear(); 
+            AddSearchculc.Add(id);
             AddSearchculc.Add("??");
         }
         public void setCulc(List<string> culc)
         {
             option = "operation";
-            //myculc[0] = culc;
+            AddSearchculc = culc;
         }
         public void setState(string state)
         {
             this.state = state;
+        }
+        public string getState()
+        {
+            return this.state;
         }
     }
     internal class Program
@@ -127,11 +125,6 @@ namespace tutorial_console
         static MyClass CulcClass;
         static void Main(string[] args)
         {
-            //JsonNode json = JsonNode.Parse(File.ReadAllText("data.json"));
-            //json["admin"]["language"] = "arabic";
-            //File.WriteAllText("data.json", json.ToJsonString(new JsonSerializerOptions { WriteIndented = true,Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping}));
-            //Dictionary<string, Dictionary<string, string>> dic = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(json["admin"]["culc"]);
-            //List<List<string>> list = dic.Select(x =>new List<string>(x.Value.Select(y=>y.Value))).ToList();
             while (true)
             {
                 if(state == "select")
@@ -139,39 +132,53 @@ namespace tutorial_console
                     CulcClass = InitMyClass();
                     Console.Write("Select your item ? ");
                     state = Console.ReadLine();
-                    //if (number == "delete")
-                    //{
-                    //    //showTable(new List<List<string>> { new MyClass("select").getCulc().Find(x => x[0].Equals(EditCulc.getCulc()[0][0])) }, "delete table");
-                    //    Console.Write("do you want to delete this item Y/N ? ");
-                    //    number = Console.ReadLine();
-                    //    if (number.Equals("y"))
-                    //    {
-                    //        Console.WriteLine("Successfully delete item");
-                    //        state = "select";
-                    //        EditCulc = null;
-                    //    }
-                    //    Console.WriteLine("Delete item is cancel");
-                    //}
+                    if (state.Contains("#"))
+                    {
+                        showTable(SelectCucl.getCulc()[state.Substring(1)], "delete table");
+                        Console.Write("do you want to delete this item Y/N ? ");
+                        string op = Console.ReadLine();
+                        if (op == "y")
+                        {
+                            JsonNode json = JsonNode.Parse(File.ReadAllText("data.json"));
+                            json["admin"]["culc"].AsObject().Remove(state.Substring(1));
+                            File.WriteAllText("data.json", json.ToJsonString(
+                                new JsonSerializerOptions
+                                {
+                                    WriteIndented = true,
+                                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                                }));
+                            Console.WriteLine("Successfully delete item");
+                        }
+                        state = "select";
+                        Console.WriteLine("Delete item is cancel");
+                    }
                 }
                 else if (CulcClass != null && CulcClass.getOption() == "confirem")
                 {
                     Console.Write("Do you aggree Y/N? ");
                     string confirem = Console.ReadLine();
-                    if (state == "add" && confirem == "y")
-                    {
-                        SelectCucl.saveCulcDataBase(CulcClass);
-                        Console.WriteLine("Successfully add item");
-                        CulcClass.resetCulc();
-                    }
-                    else if (state == "search" && confirem == "y")
+                    if (state == "search" && confirem == "y")
                     {
                         Console.WriteLine("Successfully search item");
                         //go to edit
                         EditCulc = SearchCulc;
                         CulcClass.resetOption();
                         //save key like select key
-                        state = CulcClass.getCulc().First().Key;
+                        state = CulcClass.getAddsearch().First();
                         CulcClass.setState(state);
+                    }
+                    else if (state == "add" && confirem == "y")
+                    {
+                        SelectCucl.saveCulcDataBase(CulcClass);
+                        Console.WriteLine("Successfully add item");
+                        CulcClass.resetCulc();
+                    }
+                   
+                    else if(confirem == "y")
+                    {
+                        SelectCucl.saveCulcDataBase(CulcClass);
+                        Console.WriteLine("Successfully edit item");
+                        CulcClass.resetOption();
                     }
                     else
                     {
@@ -180,19 +187,20 @@ namespace tutorial_console
                     }
 
                 }
-                else if(state == "add" || state == "search" || SelectCucl.getCulc().Where(x=>x.Key == state)!= null)
+                else if(state == "add" || state == "search" || SelectCucl.getCulc()[state] != null)//.TryGetValue(state, out List<string>value))
                 {
                     CulcClass = InitMyClass();
                     Console.Write(CulcClass.getOption() == "operation" ? "Enter your operator ? " : "Enter your number ? ");
                     string number = Console.ReadLine();
-                   
                     //make search by total use max min function
-                    //else if (state.Equals("search") && number.Contains(">") || state.Equals("search") && number.Contains("<"))
-                    //    showTable(number.Contains("<")? new MyClass("select").getCulc().FindAll(x => int.Parse(x.Last()) < int.Parse(number.Substring(1))) : new MyClass("select").getCulc().FindAll(x => int.Parse(x.Last()) > int.Parse(number.Substring(1))) , number.Contains("<")? "min search table" : "max search table");
-                    //else if (state.Equals("search") && number.Contains("&"))
-                    //    CulcClass.setCulc(new MyClass("select").getCulc().Find(x => x[0].Equals(number.Substring(1))));
-
-                    if (CulcClass.getOption().Equals("operation") && number.Equals("="))
+                    if (state == "search" && number.Contains("<") || state == "search" && number.Contains(">"))
+                        showTable(SelectCucl.getCulc().Values.Where(x => number.Contains("<") && int.Parse(x.Last()) < int.Parse(number.Substring(1)) || number.Contains(">") && int.Parse(x.Last()) > int.Parse(number.Substring(1))).ToList(), number.Contains("<") ? "min search table" : "max search table");
+                    else if (state == "search" && number.Contains("&"))
+                        CulcClass.setCulc(SelectCucl.getCulc()[number.Substring(1)].Prepend(number.Substring(1)).ToList());
+                    else if (state != "add" && state != "search" && CulcClass.getOption() == "operation" && number == "=" &&
+                         EditCulc.getAddsearch().Skip(1).SequenceEqual(SelectCucl.getCulc()[EditCulc.getState()]))
+                        Console.WriteLine("no change value");
+                    else if (CulcClass.getOption().Equals("operation") && number.Equals("="))
                         CulcClass.setOption("confirem");
                     else if (number == "help")
                         Console.WriteLine(CulcClass.getMessageHelp());
@@ -219,8 +227,10 @@ namespace tutorial_console
             };
             if (typeof(T) == typeof(List<string>))
                 culc.Add(new List<string>((List<string>)(object)culc2));
-            else 
+            else if (typeof(T) == typeof(Dictionary<string, List<string>>))
                 culc.AddRange(((Dictionary<string, List<string>>)(object)culc2).Select(item => item.Value.Prepend(item.Key).ToList()));
+            else
+                culc.AddRange(((List<List<string>>)(object)culc2).ConvertAll(x=>new List<string>(x)));
             int count = culc.Max(num => num.Count),
                 word = Math.Max(Math.Max(colume.Length, empty.Length), culc.SelectMany(x => x).Max(x => x.Length)),
                 lineSize = ((word * count) + count);
@@ -257,12 +267,13 @@ namespace tutorial_console
                     SearchCulc = SearchCulc ?? new MyClass(state, "welcome in search item screen", "Table all result and search");
                     showTable(SelectCucl.getCulc(), SearchCulc.getTableTitlt());
 
-                    //if (SearchCulc.getCulc()[0].Count > 2)
-                    //{
-                    //    List<List<string>> result = select.getCulc().Where(x => x.Skip(1).Take(SearchCulc.getCulc().First().Count - 2).SequenceEqual(SearchCulc.getCulc().First().GetRange(1, SearchCulc.getCulc().First().Count - 2))).ToList();
-                    //    showTable(result, "search table");
-                    //}
-                    showTable(SearchCulc.getCulc(), SearchCulc.getTableTitlt());
+                    if (SearchCulc.getAddsearch().Count > 2)
+                    {
+                        List<List<string>> result = SelectCucl.getCulc().Values.Where(x => x.Take(SearchCulc.getAddsearch().Count - 2).
+                        SequenceEqual(SearchCulc.getAddsearch().GetRange(1, SearchCulc.getAddsearch().Count - 2))).ToList();
+                        showTable(result, "search table");
+                    }
+                    showTable(SearchCulc.getAddsearch(), SearchCulc.getTableTitlt());
                     return SearchCulc;
                 default:
                     EditCulc = EditCulc ?? new MyClass(state, "welcome in edit item screen", "Table edit culc", SelectCucl);
