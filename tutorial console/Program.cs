@@ -87,12 +87,6 @@ namespace tutorial_console
         {
             option = option == "number" || option == "confirem" ? "operation":"number";
         }
-        public void addValueList(string number)
-        {
-            if (state == "search")
-                AddSearchculc[AddSearchculc.Count - 1] = "??";
-            AddSearchculc.Insert(AddSearchculc.Count-1, number);
-        }
         public void resetCulc()
         {
             option = "number";
@@ -212,8 +206,10 @@ namespace tutorial_console
                     else
                     {
                         CulcClass.resetOption();
-                        CulcClass.addValueList(number);
-                        if (state != "search")
+                        CulcClass.getAddsearch().Insert(CulcClass.getAddsearch().Count - 1, number);
+                        if (state == "search")
+                            CulcClass.getAddsearch()[CulcClass.getAddsearch().Count - 1] = "??";
+                        else
                             CulcClass.getAddsearch()[CulcClass.getAddsearch().Count - 1] = CulcClass.getAddsearch().Count == 3 || CulcClass.getOption() == "number" ? "??" : new DataTable().Compute(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2).Aggregate((a, b) => a + b), null).ToString();
                     }
                 }
