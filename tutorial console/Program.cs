@@ -5,6 +5,7 @@ using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Security.Policy;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -18,19 +19,17 @@ namespace tutorial_console
     {
         string HelpMessage;
         string TableTitlt;
-        JsonNode json;
         string option;
         string state;
         Dictionary<string, List<string>> myculc = new Dictionary<string, List<string>>();
         List<string> AddSearchculc;
-        public MyClass(string state, string helpMessage, string tableTitlt, MyClass select = null)
+        public MyClass(string state, string helpMessage, string tableTitlt, MyClass select = null, Dictionary<string, List<string>> culc = null)//change Dictionary ito list
         {
             this.state = state;
             HelpMessage = helpMessage;
             TableTitlt = tableTitlt;
-            json = JsonNode.Parse(File.ReadAllText("data.json"));
             if (state == "select")
-                myculc = JsonSerializer.Deserialize<Dictionary<string, List<string>>>(json["admin"]["culc"]);
+                myculc = culc;
             
             //for edit item
             else if (select != null)
@@ -52,16 +51,6 @@ namespace tutorial_console
         public string getMessageHelp()
         {
             return HelpMessage;
-        }
-        public void saveCulcDataBase(MyClass obj)
-        {
-            json["admin"]["culc"].AsObject()[obj.getAddsearch().First()] =  JsonSerializer.SerializeToNode(obj.getAddsearch().Skip(1));
-            File.WriteAllText("data.json", json.ToJsonString(
-                new JsonSerializerOptions
-                {
-                    WriteIndented = true,
-                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-                }));
         }
         public string makeId()
         {
@@ -117,41 +106,24 @@ namespace tutorial_console
         static MyClass EditCulc;
         static MyClass SelectCucl;
         static MyClass CulcClass;
+        static JsonNode json;
         static void Main(string[] args)
         {
+            json = JsonNode.Parse(File.ReadAllText("data.json"));
             while (true)
             {
-                if(state == "select")
-                {
-                    CulcClass = InitMyClass();
-                    Console.Write("Select your item ? ");
-                    state = Console.ReadLine();
-                    if (state.Contains("#"))
-                    {
-                        showTable(SelectCucl.getCulc()[state.Substring(1)], "delete table");
-                        Console.Write("do you want to delete this item Y/N ? ");
-                        string op = Console.ReadLine();
-                        if (op == "y")
-                        {
-                            JsonNode json = JsonNode.Parse(File.ReadAllText("data.json"));
-                            json["admin"]["culc"].AsObject().Remove(state.Substring(1));
-                            File.WriteAllText("data.json", json.ToJsonString(
-                                new JsonSerializerOptions
-                                {
-                                    WriteIndented = true,
-                                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-                                }));
-                            Console.WriteLine("Successfully delete item");
-                        }
-                        state = "select";
-                        Console.WriteLine("Delete item is cancel");
-                    }
-                }
-                else if (CulcClass != null && CulcClass.getOption() == "confirem")
+                if (CulcClass != null && CulcClass.getOption() == "confirem")
                 {
                     Console.Write("Do you aggree Y/N? ");
                     string confirem = Console.ReadLine();
-                    if (state == "search" && confirem == "y")
+
+                    if (state == "select" && confirem == "y")
+                    {
+                        json["admin"]["culc"].AsObject().Remove(state.Substring(1));
+                        saveFile("Successfully delete item");
+                        state = "select";
+                    }
+                    else if (state == "search" && confirem == "y")
                     {
                         Console.WriteLine("Successfully search item");
                         //go to edit
@@ -161,41 +133,47 @@ namespace tutorial_console
                         state = CulcClass.getAddsearch().First();
                         CulcClass.setState(state);
                     }
-                    else if (state == "add" && confirem == "y")
+                    else if (confirem == "y")
                     {
-                        SelectCucl.saveCulcDataBase(CulcClass);
-                        Console.WriteLine("Successfully add item");
-                        CulcClass.resetCulc();
+                        saveCulcDataBase(CulcClass, state == "add" ? "Successfully add item" : "Successfully edit item");
+                        CulcClass.setOption(state == "add" ? "number" : "operation");
                     }
-                   
-                    else if(confirem == "y")
+                    else if (state.Contains("#"))
                     {
-                        SelectCucl.saveCulcDataBase(CulcClass);
-                        Console.WriteLine("Successfully edit item");
-                        CulcClass.resetOption();
+                        state = "select";
+                        Console.WriteLine("Cancel confirem");
                     }
                     else
                     {
-                        Console.WriteLine("Cancel confirem");
                         CulcClass.setOption("operation");
+                        Console.WriteLine("Cancel confirem");
                     }
 
+
                 }
-                else if(state == "add" || state == "search" || SelectCucl.getCulc()[state] != null)//.TryGetValue(state, out List<string>value))
+                else if(state == "select" || state == "add" || state == "search" || SelectCucl.getCulc()[state] != null)//.TryGetValue(state, out List<string>value))
                 {
                     CulcClass = InitMyClass();
-                    Console.Write(CulcClass.getOption() == "operation" ? "Enter your operator ? " : "Enter your number ? ");
+                    Console.Write(state == "select"? "Select your item ? " : (CulcClass.getOption() == "operation" ? "Enter your operator ? " : "Enter your number ? "));
                     string number = Console.ReadLine();
+                    if(state == "select" && SelectCucl.getCulc()[number] != null)
+                    {
+                        state = number;
+                    }
+                    else if (state == "select" && number.Contains("#") || CulcClass.getOption().Equals("operation") && number.Equals("="))
+                    {
+                        CulcClass.setOption("confirem");
+                        if(state == "select")//for all add and search and edit
+                            showTable(CulcClass.getCulc()[number.Substring(1)], "delete table");
+                    }
                     //make search by total use max min function
-                    if (state == "search" && number.Contains("<") || state == "search" && number.Contains(">"))
+                    else if (state == "search" && number.Contains("<") || state == "search" && number.Contains(">"))
                         showTable(SelectCucl.getCulc().Values.Where(x => number.Contains("<") && int.Parse(x.Last()) < int.Parse(number.Substring(1)) || number.Contains(">") && int.Parse(x.Last()) > int.Parse(number.Substring(1))).ToList(), number.Contains("<") ? "min search table" : "max search table");
                     else if (state == "search" && number.Contains("&"))
                         CulcClass.setCulc(SelectCucl.getCulc()[number.Substring(1)].Prepend(number.Substring(1)).ToList());
                     else if (state != "add" && state != "search" && CulcClass.getOption() == "operation" && number == "=" &&
                          EditCulc.getAddsearch().Skip(1).SequenceEqual(SelectCucl.getCulc()[EditCulc.getState()]))
                         Console.WriteLine("no change value");
-                    else if (CulcClass.getOption().Equals("operation") && number.Equals("="))
-                        CulcClass.setOption("confirem");
                     else if (number == "help")
                         Console.WriteLine(CulcClass.getMessageHelp());
                     else if (number == "clear")
@@ -214,6 +192,21 @@ namespace tutorial_console
                     }
                 }
             }
+        }
+        static void saveCulcDataBase(MyClass obj, string message)
+        {
+            json["admin"]["culc"].AsObject()[obj.getAddsearch().First()] = JsonSerializer.SerializeToNode(obj.getAddsearch().Skip(1));
+            saveFile(message);
+        }
+        static void saveFile(string message)
+        {
+            File.WriteAllText("data.json", json.ToJsonString(
+                new JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                }));
+            Console.WriteLine(message);
         }
         static void showTable<T>(T culc2, string title)
         {
@@ -256,7 +249,7 @@ namespace tutorial_console
                     showTable(AddCulc.getAddsearch(), AddCulc.getTableTitlt());
                     return AddCulc;
                 case "select":
-                    SelectCucl = SelectCucl??new MyClass(state, "welcome in select item screen", "Table all result");
+                    SelectCucl = SelectCucl??new MyClass(state, "welcome in select item screen", "Table all result", null, JsonSerializer.Deserialize<Dictionary<string, List<string>>>(json["admin"]["culc"]));
                     showTable(SelectCucl.getCulc(), SelectCucl.getTableTitlt());
                     return SelectCucl;
                 case "search":
