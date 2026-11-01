@@ -21,9 +21,9 @@ namespace tutorial_console
         string TableTitlt;
         string option;
         string state;
-        Dictionary<string, List<string>> myculc = new Dictionary<string, List<string>>();
+        List<List<string>> myculc = new List<List<string>>();
         List<string> AddSearchculc;
-        public MyClass(string state, string helpMessage, string tableTitlt, List<string> select = null, Dictionary<string, List<string>> culc = null)//change Dictionary ito list
+        public MyClass(string state, string helpMessage, string tableTitlt, List<string> select = null, List<List<string>> culc = null)//change Dictionary ito list
         {
             this.state = state;
             HelpMessage = helpMessage;
@@ -56,7 +56,7 @@ namespace tutorial_console
         {
             return Guid.NewGuid().ToString("N").Substring(0, 3);
         }
-        public Dictionary<string, List<string>> getCulc()
+        public List<List<string>> getCulc()
         {
             return myculc;
         }
@@ -148,21 +148,25 @@ namespace tutorial_console
                     Console.Write(CulcClass.getState() == "select"? "Select your item ? " : (CulcClass.getOption() == "operation" ? "Enter your operator ? " : "Enter your number ? "));
                     number = Console.ReadLine();                    
                     if (CulcClass.getState() == "edit" && CulcClass.getOption() == "operation" && number == "=" &&
-                         EditCulc.getAddsearch().Skip(1).SequenceEqual(SelectCucl.getCulc()[EditCulc.getAddsearch().First()]))
+                         EditCulc.getAddsearch().SequenceEqual(EditCulc.getAddsearch()))
                         Console.WriteLine("no change value");
                     else if (CulcClass.getState() == "select" && number.Contains("#") || CulcClass.getOption() == "operation" && number == "=")
                     {
                         CulcClass.setOption("confirem");
                         if (CulcClass.getState() == "select")//for all add and search and edit
-                            showTable(SelectCucl.getCulc()[number.Substring(1)], "delete table");
-                        
+                            showTable(SelectCucl.getCulc().Find(x=>x.First() == number.Substring(1)), "delete table");
+
                     }
 
                     //make search by total use max min function
-                    if (CulcClass.getState() == "search" && number.Contains("<") || CulcClass.getState() == "search" && number.Contains(">"))
-                        showTable(SelectCucl.getCulc().Values.Where(x => number.Contains("<") && int.Parse(x.Last()) < int.Parse(number.Substring(1)) || number.Contains(">") && int.Parse(x.Last()) > int.Parse(number.Substring(1))).ToList(), number.Contains("<") ? "min search table" : "max search table");
+                    else if (CulcClass.getState() == "search" && number.Contains("<") || CulcClass.getState() == "search" && number.Contains(">"))
+                        showTable(SelectCucl.getCulc().FindAll(x => number.Contains("<") && int.Parse(x.Last()) < int.Parse(number.Substring(1)) || number.Contains(">") && int.Parse(x.Last()) > int.Parse(number.Substring(1))).ToList(), number.Contains("<") ? "min search table" : "max search table");
                     else if (CulcClass.getState() == "search" && number.Contains("&"))
-                        CulcClass.setCulc(SelectCucl.getCulc()[number.Substring(1)].Prepend(number.Substring(1)).ToList());
+                        CulcClass.setCulc(SelectCucl.getCulc().Find(x=>x.First() == number.Substring(1)));
+
+                    //show table culc
+                    else if(number == "lee")
+                        showTable(SelectCucl.getCulc(), SelectCucl.getTableTitlt());
 
 
                     else if (number == "help")
@@ -178,9 +182,11 @@ namespace tutorial_console
                         CulcClass.resetOption();
                         CulcClass.getAddsearch().Insert(CulcClass.getAddsearch().Count - 1, number);
                         CulcClass.getAddsearch()[CulcClass.getAddsearch().Count - 1] = CulcClass.getState() == "search" || CulcClass.getAddsearch().Count == 3 || CulcClass.getOption() == "number" ? "??" : new DataTable().Compute(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2).Aggregate((a, b) => a + b), null).ToString();
-                        if (CulcClass.getState() == "search" && CulcClass.getAddsearch().Count > 2 && SelectCucl.getCulc().Where(x => x.Value.Take(CulcClass.getAddsearch().Count - 2).SequenceEqual(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2))).Select(x => x.Value.Prepend(x.Key).ToList()).ToList().Any())
-                            showTable(SelectCucl.getCulc().Where(x => x.Value.Take(CulcClass.getAddsearch().Count - 2).SequenceEqual(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2))).Select(x => x.Value.Prepend(x.Key).ToList()).ToList(), "search table");                 
-                    }else
+                        if (CulcClass.getState() == "search")
+                            showTable(SelectCucl.getCulc().FindAll(x => x.Skip(1).Take(CulcClass.getAddsearch().Count - 2).
+                            SequenceEqual(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2))), "search table");
+                    }
+                    else
                         state = number;
 
 
@@ -196,7 +202,7 @@ namespace tutorial_console
                     Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
                 }));
             Console.WriteLine(message);
-            SelectCucl = new MyClass(state, "welcome in select item screen", "Table all result", null, JsonSerializer.Deserialize<Dictionary<string, List<string>>>(json["admin"]["culc"]));
+            SelectCucl = new MyClass(state, "welcome in select item screen", "Table all result", null, json["admin"]["culc"].AsObject().Select(x => x.Value.Deserialize<List<string>>().Prepend(x.Key).ToList()).ToList());
 
         }
         static void showTable<T>(T culc2, string title)
@@ -240,7 +246,7 @@ namespace tutorial_console
                     showTable(AddCulc.getAddsearch(), AddCulc.getTableTitlt());
                     return AddCulc;
                 case "select":
-                    SelectCucl = SelectCucl ?? new MyClass(state, "welcome in select item screen", "Table all result", null, JsonSerializer.Deserialize<Dictionary<string, List<string>>>(json["admin"]["culc"]));
+                    SelectCucl = SelectCucl ?? new MyClass(state, "welcome in select item screen", "Table all result", null, json["admin"]["culc"].AsObject().Select(x => x.Value.Deserialize<List<string>>().Prepend(x.Key).ToList()).ToList());
                     showTable(SelectCucl.getCulc(), SelectCucl.getTableTitlt());
                     return SelectCucl;
                 case "search":
@@ -249,7 +255,7 @@ namespace tutorial_console
                     showTable(SearchCulc.getAddsearch(), SearchCulc.getTableTitlt());
                     return SearchCulc;
                 default:
-                    EditCulc = EditCulc ?? new MyClass("edit", "welcome in edit item screen", "Table edit culc", SelectCucl.getCulc()[state].Prepend(state).ToList());
+                    EditCulc = EditCulc ?? new MyClass("edit", "welcome in edit item screen", "Table edit culc", SelectCucl.getCulc().Find(x=>x.First() == state));
                     showTable(EditCulc.getAddsearch(), EditCulc.getTableTitlt());
                     return EditCulc;
             }
