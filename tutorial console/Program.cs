@@ -194,7 +194,7 @@ namespace tutorial_console
                     {
                         Console.WriteLine("Successfully search item");
                         //go to edit
-                        EditCulc = new MyClass("edit", "Clear:- Successfully cleare table", "Nav message:- Welcome in search screen", "Confirem:- table edit", "Help message:- welcome in edit screen", "Value:- edit table", SearchCulc.getAddsearch().ToList());
+                        EditCulc = new MyClass("edit", "Clear:- Successfully cleare table", "Nav message:- Welcome in edit screen", "Confirem:- table edit", "Help message:- welcome in edit screen", "Value:- edit table", SearchCulc.getAddsearch().ToList());
                         CulcClass = EditCulc;
                         showTable(CulcClass.getAddsearch(), CulcClass.getTableTitlt());
                     }
@@ -215,23 +215,12 @@ namespace tutorial_console
                 {
                     Console.Write(CulcClass.getOption() == "operation" ? "Enter your operator ? " : "Enter your number ? ");
                     number = Console.ReadLine();
-                    if (number == "add")
+                    if (number == "add" || number == "search" || number == "edit" && EditCulc != null)
                     {
-                        CulcClass = AddCulc ?? new MyClass(number, "Clear:- Successfully cleare table", "Nav message:- Welcome in search screen", "Confirem:- table add", "Help message :- welcome in add item screen", "Value:- add table");
+                        CulcClass = number == "search"? SearchCulc : (number == "edit"? EditCulc : (AddCulc ?? new MyClass(number, "Clear:- Successfully cleare table", "Nav message:- Welcome in add screen", "Confirem:- table add", "Help message :- welcome in add item screen", "Value:- add table")));
+                        Console.WriteLine(CulcClass.getNavMessage());
                         showTable(CulcClass.getAddsearch(), CulcClass.getTableTitlt());
                     }
-                    else if (number == "search")
-                    {
-                        CulcClass = SearchCulc;
-                        showTable(CulcClass.getAddsearch(), CulcClass.getTableTitlt());
-                    }
-                    else if (number == "edit" && EditCulc != null)
-                    {
-                        CulcClass = EditCulc;
-                        showTable(CulcClass.getAddsearch(), CulcClass.getTableTitlt());
-                    }
-                    
-                    
                     //make help and edit and test change value and edit == null
                     else if (number == "clear" || number == "help" || number == "edit" && EditCulc == null || CulcClass.getState() == "edit" && CulcClass.getOption() == "operation" && number == "=" && SearchCulc.getCulc().Find(x => x.SequenceEqual(CulcClass.getAddsearch())) != null)
                         Console.WriteLine(number == "clear"?CulcClass.getConfiremMessage():(number == "help"? CulcClass.getMessageHelp():(number == "edit"? "Edit null value please select value" : "no change value")));
