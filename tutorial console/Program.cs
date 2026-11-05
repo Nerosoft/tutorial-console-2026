@@ -264,8 +264,8 @@ namespace tutorial_console
                     {
                         CulcClass = SearchCulc;
                         EditCulc = null;
-                        showTable(CulcClass.getCulc(), CulcClass.getTitleResultCulc());
                     }
+                    showTable(SearchCulc.getCulc(), CulcClass.getTitleResultCulc());
                 }
                 else if(CulcClass.getOption() == "confirem" && number != "y")
                 {
