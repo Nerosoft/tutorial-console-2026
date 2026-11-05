@@ -234,10 +234,8 @@ namespace tutorial_console
                 //make delete item
                 else if (CulcClass.getOption() == "confirem" && number == "d")
                 {
-                    json = JsonNode.Parse(File.ReadAllText("data.json"));
                     json["admin"]["culc"].AsObject().Remove(CulcClass.getAddsearch().First());
                     saveFile(CulcClass.getDeleteMessage());
-                    CulcClass.resetCulc();
                 }
                 // make search item
                 else if (CulcClass.getOption() == "confirem" && CulcClass.getState() == "search" && number == "e")
@@ -251,16 +249,8 @@ namespace tutorial_console
                 //make edit or add item
                 else if (CulcClass.getOption() == "confirem" && number == "y")
                 {
-                    json = JsonNode.Parse(File.ReadAllText("data.json"));
                     json["admin"]["culc"].AsObject()[CulcClass.getAddsearch().First()] = JsonSerializer.SerializeToNode(CulcClass.getAddsearch().Skip(1));
                     saveFile(CulcClass.getSuccessfullyMessage());
-                    if (CulcClass.getState() == "add")
-                        CulcClass.resetCulc();
-                    else
-                    {
-                        CulcClass = SearchCulc;
-                        EditCulc = null;
-                    }
                 }
                 else if(CulcClass.getOption() == "confirem" && number != "y")
                 {
@@ -294,10 +284,17 @@ namespace tutorial_console
                     WriteIndented = true,
                     Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
                 }));
+            json = JsonNode.Parse(File.ReadAllText("data.json"));
             SearchCulc.setMyCulc(json["admin"]["culc"].AsObject().Select(x => x.Value.Deserialize<List<string>>().Prepend(x.Key).ToList()).ToList());
             showTable(SearchCulc.getCulc(), CulcClass.getTitleResultCulc());
             Console.WriteLine(successfullymessage);
-
+            if (CulcClass.getState() == "edit")
+            {
+                 CulcClass = SearchCulc;
+                 EditCulc = null;
+            }
+            else
+                CulcClass.resetCulc();
         }
         static void showTable<T>(T culc2, string title)
         {
