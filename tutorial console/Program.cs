@@ -219,8 +219,7 @@ namespace tutorial_console
             showTable(CulcClass.getCulc(), CulcClass.getTitleResultCulc());
             while (true)
             {
-                showTable(CulcClass.getOption() == "confirem" && CulcClass.getState() == "search" && number.Contains("&") ?  CulcClass.setCulc(CulcClass.getCulc().Find(x => x.First() == number.Substring(1)).ToList()):
-                    CulcClass.getAddsearch(), CulcClass.getOption() == "confirem"? CulcClass.getConfiremMessage() : CulcClass.getTableTitlt());
+                showTable(CulcClass.getOption() == "confirem" && CulcClass.getState() == "search" && number.Contains("&") ?  CulcClass.setCulc(CulcClass.getCulc().Find(x => x.First() == number.Substring(1)).ToList()):CulcClass.getAddsearch(), CulcClass.getOption() == "confirem"? CulcClass.getConfiremMessage() : CulcClass.getTableTitlt());
                 Console.Write(CulcClass.getOption() == "confirem" ? CulcClass.getAgreeConfiremMessage() : (CulcClass.getOption() == "operation" ? CulcClass.getOperatorMessage() : CulcClass.getNumberMessage()));
                 number = Console.ReadLine();
                 if (number == "add" || number == "search" || number == "edit" && EditCulc != null)
@@ -237,10 +236,8 @@ namespace tutorial_console
                 {
                     json = JsonNode.Parse(File.ReadAllText("data.json"));
                     json["admin"]["culc"].AsObject().Remove(CulcClass.getAddsearch().First());
-                    saveFile();
-                    Console.WriteLine(CulcClass.getDeleteMessage());
+                    saveFile(CulcClass.getDeleteMessage());
                     CulcClass.resetCulc();
-                    showTable(CulcClass.getCulc(), CulcClass.getTitleResultCulc());
                 }
                 // make search item
                 else if (CulcClass.getOption() == "confirem" && CulcClass.getState() == "search" && number == "e")
@@ -256,8 +253,7 @@ namespace tutorial_console
                 {
                     json = JsonNode.Parse(File.ReadAllText("data.json"));
                     json["admin"]["culc"].AsObject()[CulcClass.getAddsearch().First()] = JsonSerializer.SerializeToNode(CulcClass.getAddsearch().Skip(1));
-                    saveFile();
-                    Console.WriteLine(CulcClass.getSuccessfullyMessage());
+                    saveFile(CulcClass.getSuccessfullyMessage());
                     if (CulcClass.getState() == "add")
                         CulcClass.resetCulc();
                     else
@@ -265,7 +261,6 @@ namespace tutorial_console
                         CulcClass = SearchCulc;
                         EditCulc = null;
                     }
-                    showTable(SearchCulc.getCulc(), CulcClass.getTitleResultCulc());
                 }
                 else if(CulcClass.getOption() == "confirem" && number != "y")
                 {
@@ -284,18 +279,14 @@ namespace tutorial_console
                     CulcClass.getAddsearch().Insert(CulcClass.getAddsearch().Count - 1, number);
                     try
                     {
-                        CulcClass.getAddsearch()[CulcClass.getAddsearch().Count - 1] = CulcClass.getState() == "search" ||
-                            CulcClass.getAddsearch().Count == 3 ||
-                            CulcClass.getOption() == "number" ? "??" : new DataTable().Compute(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2).Aggregate((a, b) => a + b), null).ToString();
+                        CulcClass.getAddsearch()[CulcClass.getAddsearch().Count - 1] = CulcClass.getState() == "search" ||CulcClass.getAddsearch().Count == 3 ||CulcClass.getOption() == "number" ? "??" : new DataTable().Compute(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2).Aggregate((a, b) => a + b), null).ToString();
                     }
                     catch { }
-                    if (CulcClass.getState() == "search" && CulcClass.getCulc().FindAll(x => CulcClass.getAddsearch().Count < x.Count && x.GetRange(1, CulcClass.getAddsearch().Count - 2).SequenceEqual(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2))).Any())
-                        showTable(CulcClass.getCulc().FindAll(x => x.GetRange(1, CulcClass.getAddsearch().Count - 2).SequenceEqual(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2))), CulcClass.getFoundCulcMessage());
                 }
                 InitMyClass();
             }
         }
-        static void saveFile()
+        static void saveFile(string successfullymessage)
         {
             File.WriteAllText("data.json", json.ToJsonString(
                 new JsonSerializerOptions
@@ -304,6 +295,9 @@ namespace tutorial_console
                     Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
                 }));
             SearchCulc.setMyCulc(json["admin"]["culc"].AsObject().Select(x => x.Value.Deserialize<List<string>>().Prepend(x.Key).ToList()).ToList());
+            showTable(SearchCulc.getCulc(), CulcClass.getTitleResultCulc());
+            Console.WriteLine(successfullymessage);
+
         }
         static void showTable<T>(T culc2, string title)
         {
@@ -343,6 +337,7 @@ namespace tutorial_console
                     AddCulc = CulcClass;
                     break;
                 case "search":
+                    showTable(CulcClass.getCulc().FindAll(x => CulcClass.getAddsearch().Count < x.Count && x.GetRange(1, CulcClass.getAddsearch().Count - 2).SequenceEqual(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2))), CulcClass.getFoundCulcMessage());
                     SearchCulc = CulcClass;
                     break;
                 case "edit":
