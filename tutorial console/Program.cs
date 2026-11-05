@@ -42,7 +42,6 @@ namespace tutorial_console
 
         List<List<string>> myculc = new List<List<string>>();
         List<string> AddSearchculc;
-        string NotFound;
         public MyClass(string state, string agreeConfiremMessage, string nullMessage, string cancelMessage, string successfullyMessage, string numberMessage, string operatorMessage, string clearMessage, string navMessage, string confiremMessage, string helpMessage, string tableTitlt, List<string> select = null, List<List<string>> culc = null)
         {
             this.state = state;
@@ -57,43 +56,28 @@ namespace tutorial_console
             CancelMessage = cancelMessage;
             NullMessage = nullMessage;
             AgreeConfiremMessage = agreeConfiremMessage;
-            //make edit item
-            if (select != null)
+            AddSearchculc = select?? new List<string>() { state == "search" ? "??" : makeId(), "??" };
+            option = state == "edit"? "operation": "number";       
+            if (state == "search")
             {
+                myculc = culc;
+                TitleResultCulc = "Table all result culc";
+                FoundCulcMessage = "Found:- culc table";
+                MinimizeMessage = "Minimize:- Found value table";
+                MaximizeMessage = "MaximizeM:- Found value table";
+                DeleteMessage = "Successfully delete item";
+            }else
                 ValueChangeMessage = "No change value";
-                option = "operation";
-                AddSearchculc = select;
-            }
-            else if (state == "search" || state == "add")
-            {
-                if (state == "search")
-                {
-                    myculc = culc;
-                    TitleResultCulc = "Table all result culc";
-                    FoundCulcMessage = "Found:- culc table";
-                    MinimizeMessage = "Minimize:- Found value table";
-                    MaximizeMessage = "MaximizeM:- Found value table";
-                    DeleteMessage = "Successfully delete item";
-                    NotFound = "Not found value";
-                }
-                option = "number";
-                AddSearchculc = new List<string>() { state == "search" ? "??" : makeId(), "??" };
-            }
-            
-        }
-        public string getNotFoundList()
-        {
-            return NotFound;
         }
         public string getAgreeConfiremMessage()
         {
             return AgreeConfiremMessage;
         }
 
-        public void getSuccessfullyMessage(bool state = true)
+        public string getSuccessfullyMessage(string value = "")
         {
             resetCulc();
-            Console.WriteLine(state ?SuccessfullyMessage: DeleteMessage);
+            return value == "d" ? DeleteMessage : SuccessfullyMessage;
         }
         public string getCancelMessage()
         {
@@ -234,13 +218,6 @@ namespace tutorial_console
                 //show table culc
                 else if (CulcClass.getState() == "search" && number.Contains("<") || CulcClass.getState() == "search" && number.Contains(">") || number == "lee")
                     showTable(number == "lee" ? SearchCulc.getCulc() : (CulcClass.getCulc().FindAll(x => number.Contains("<") && int.Parse(x.Last()) < int.Parse(number.Substring(1)) || number.Contains(">") && int.Parse(x.Last()) > int.Parse(number.Substring(1))).ToList()), number == "lee" ? SearchCulc.getTitleResultCulc() : (number.Contains("<") ? CulcClass.getMinimizeMessage() : CulcClass.getMaximizeMessage()));
-                //make delete item
-                else if (CulcClass.getOption() == "confirem" && number == "d")
-                {
-                    json["admin"]["culc"].AsObject().Remove(CulcClass.getAddsearch().First());
-                    CulcClass.getSuccessfullyMessage(false);
-                    saveFile();
-                }
                 // make search item
                 else if (CulcClass.getOption() == "confirem" && CulcClass.getState() == "search" && number == "e")
                 {
@@ -249,11 +226,9 @@ namespace tutorial_console
                     SearchCulc.getSuccessfullyMessage();
                 }
                 //make edit or add item
-                else if (CulcClass.getOption() == "confirem" && number == "y")
+                else if (CulcClass.getOption() == "confirem" && number == "d" && json["admin"]["culc"].AsObject().Remove(CulcClass.getAddsearch().First()) || CulcClass.getOption() == "confirem" && number == "y" && (json["admin"]["culc"].AsObject()[CulcClass.getAddsearch().First()] = JsonSerializer.SerializeToNode(CulcClass.getAddsearch().Skip(1))) != null)
                 {
-                    json["admin"]["culc"].AsObject()[CulcClass.getAddsearch().First()] = JsonSerializer.SerializeToNode(CulcClass.getAddsearch().Skip(1));
-                    CulcClass.getSuccessfullyMessage();
-                    saveFile();
+                    saveFile(CulcClass.getSuccessfullyMessage(number));
                     if (CulcClass.getState() == "edit")
                     {
                         CulcClass = SearchCulc;
@@ -280,11 +255,14 @@ namespace tutorial_console
                         CulcClass.getAddsearch()[CulcClass.getAddsearch().Count - 1] = CulcClass.getState() == "search" ||CulcClass.getAddsearch().Count == 3 ||CulcClass.getOption() == "number" ? "??" : new DataTable().Compute(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2).Aggregate((a, b) => a + b), null).ToString();
                     }
                     catch { }
+                    if(CulcClass.getState() == "search" && CulcClass.getCulc().FindAll(x => CulcClass.getAddsearch().Count < x.Count && x.GetRange(1, CulcClass.getAddsearch().Count - 2).SequenceEqual(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2))).Any())
+                        showTable(CulcClass.getCulc().FindAll(x => CulcClass.getAddsearch().Count < x.Count && x.GetRange(1, CulcClass.getAddsearch().Count - 2).SequenceEqual(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2))), CulcClass.getFoundCulcMessage());
+
                 }
                 InitMyClass();
             }
         }
-        static void saveFile()
+        static void saveFile(string successfullyMessage)
         {
             File.WriteAllText("data.json", json.ToJsonString(
                 new JsonSerializerOptions
@@ -292,9 +270,10 @@ namespace tutorial_console
                     WriteIndented = true,
                     Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
                 }));
+            Console.WriteLine(successfullyMessage);
             json = JsonNode.Parse(File.ReadAllText("data.json"));
             SearchCulc.setMyCulc(json["admin"]["culc"].AsObject().Select(x => x.Value.Deserialize<List<string>>().Prepend(x.Key).ToList()).ToList());
-            showTable(SearchCulc.getCulc(), CulcClass.getTitleResultCulc());
+            showTable(SearchCulc.getCulc(), SearchCulc.getTitleResultCulc());
         }
         static void showTable<T>(T culc2, string title)
         {
@@ -334,7 +313,6 @@ namespace tutorial_console
                     AddCulc = CulcClass;
                     break;
                 case "search":
-                    showTable(CulcClass.getCulc().FindAll(x => CulcClass.getAddsearch().Count < x.Count && x.GetRange(1, CulcClass.getAddsearch().Count - 2).SequenceEqual(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2))).DefaultIfEmpty(CulcClass.getAddsearch()).ToList(), CulcClass.getCulc().FindAll(x => CulcClass.getAddsearch().Count < x.Count && x.GetRange(1, CulcClass.getAddsearch().Count - 2).SequenceEqual(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2))).Any()?CulcClass.getFoundCulcMessage():CulcClass.getNotFoundList());
                     SearchCulc = CulcClass;
                     break;
                 case "edit":
