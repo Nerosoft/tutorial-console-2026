@@ -74,10 +74,10 @@ namespace tutorial_console
             return AgreeConfiremMessage;
         }
 
-        public void getSuccessfullyMessage(string message = null)
+        public void getSuccessfullyMessage()
         {
             resetCulc();
-            Console.WriteLine(message ?? SuccessfullyMessage);
+            Console.WriteLine(SuccessfullyMessage);
         }
         public string getDeleteMessage()
         {
@@ -233,13 +233,25 @@ namespace tutorial_console
                 //make edit or add item
                 else if (CulcClass.getOption() == "confirem" && number == "d" && json["admin"]["culc"].AsObject().Remove(CulcClass.getAddsearch().First()) || CulcClass.getOption() == "confirem" && number == "y" && (json["admin"]["culc"].AsObject()[CulcClass.getAddsearch().First()] = JsonSerializer.SerializeToNode(CulcClass.getAddsearch().Skip(1))) != null)
                 {
-                    saveFile();
-                    CulcClass.getSuccessfullyMessage(number != "d" ? null: CulcClass.getDeleteMessage());
-                    if (CulcClass.getState() == "edit")
-                    {
-                        CulcClass = SearchCulc;
-                        EditCulc = null;
-                    }
+                    File.WriteAllText("data.json", json.ToJsonString(new JsonSerializerOptions{WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping}));
+                    json = JsonNode.Parse(File.ReadAllText("data.json"));
+                    SearchCulc.setMyCulc(json["admin"]["culc"].AsObject().Select(x => x.Value.Deserialize<List<string>>().Prepend(x.Key).ToList()).ToList());
+                    showTable(SearchCulc.getCulc(), SearchCulc.getTitleResultCulc());
+                    //CulcClass.getSuccessfullyMessage();
+
+                    //if (CulcClass.getState() == "edit")
+                    //{
+                    //    CulcClass = SearchCulc;
+                    //    EditCulc = null;
+                    //}
+                    //else if(number == "d" && EditCulc != null && EditCulc.getAddsearch().First() == SearchCulc.getAddsearch().First())
+                    //{
+                    //    Console.WriteLine(CulcClass.getDeleteMessage());
+                    //    EditCulc = null;
+                    //}
+
+                    //CulcClass.getSuccessfullyMessage();
+
                 }
                 else if(CulcClass.getOption() == "confirem" && number != "y")
                 {
@@ -267,18 +279,6 @@ namespace tutorial_console
                 }
                 InitMyClass();
             }
-        }
-        static void saveFile()
-        {
-            File.WriteAllText("data.json", json.ToJsonString(
-                new JsonSerializerOptions
-                {
-                    WriteIndented = true,
-                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-                }));
-            json = JsonNode.Parse(File.ReadAllText("data.json"));
-            SearchCulc.setMyCulc(json["admin"]["culc"].AsObject().Select(x => x.Value.Deserialize<List<string>>().Prepend(x.Key).ToList()).ToList());
-            showTable(SearchCulc.getCulc(), SearchCulc.getTitleResultCulc());
         }
         static void showTable<T>(T culc2, string title)
         {
