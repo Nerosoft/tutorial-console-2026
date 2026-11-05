@@ -17,6 +17,7 @@ namespace tutorial_console
 {
     //make resit option and culc
     //make change  "Enter your operator ? " : "Enter your number ? "
+    //mesage agree Y/N
     internal class MyClass
     {
         string HelpMessage;
@@ -30,7 +31,6 @@ namespace tutorial_console
         string ClearMessage;
         string MinimizeMessage;
         string MaximizeMessage;
-        string ConfiremDelete;
         string NumberMessage;
         string OperatorMessage;
         string SuccessfullyMessage;
@@ -38,10 +38,11 @@ namespace tutorial_console
         string ValueChangeMessage;
         string NullMessage;
         string DeleteMessage;
-        string ConfiremDeleteMessage;
-        List <List<string>> myculc = new List<List<string>>();
+        string AgreeConfiremMessage;
+
+        List<List<string>> myculc = new List<List<string>>();
         List<string> AddSearchculc;
-        public MyClass(string state, string cancelMessage, string successfullyMessage, string numberMessage, string operatorMessage, string clearMessage, string navMessage, string confiremMessage, string helpMessage, string tableTitlt, List<string> select = null, List<List<string>> culc = null)
+        public MyClass(string state, string agreeConfiremMessage, string nullMessage, string cancelMessage, string successfullyMessage, string numberMessage, string operatorMessage, string clearMessage, string navMessage, string confiremMessage, string helpMessage, string tableTitlt, List<string> select = null, List<List<string>> culc = null)
         {
             this.state = state;
             HelpMessage = helpMessage;
@@ -53,7 +54,8 @@ namespace tutorial_console
             OperatorMessage = operatorMessage;
             SuccessfullyMessage = successfullyMessage;
             CancelMessage = cancelMessage;
-            NullMessage = "Edit null value please select value";
+            NullMessage = nullMessage;
+            AgreeConfiremMessage = agreeConfiremMessage;
             //make edit item
             if (select != null)
             {
@@ -70,19 +72,18 @@ namespace tutorial_console
                     FoundCulcMessage = "Found:- culc table";
                     MinimizeMessage = "Minimize:- Found value table";
                     MaximizeMessage = "MaximizeM:- Found value table";
-                    ConfiremDelete = "Confirem:- table delete";
                     DeleteMessage = "Successfully delete item";
-                    ConfiremDeleteMessage = "Cancel confirem delete";
                 }
                 option = "number";
                 AddSearchculc = new List<string>() { state == "search" ? "??" : makeId(), "??" };
             }
             
         }
-        public string getConfiremDeleteMessage()
+        public string getAgreeConfiremMessage()
         {
-            return ConfiremDeleteMessage;
+            return AgreeConfiremMessage;
         }
+
         public string getDeleteMessage()
         {
             return DeleteMessage;
@@ -110,10 +111,6 @@ namespace tutorial_console
         public string getOperatorMessage()
         {
             return OperatorMessage;
-        }
-        public string getConfiremDelete()
-        {
-            return ConfiremDelete;
         }
         public string getMinimizeMessage()
         {
@@ -158,7 +155,6 @@ namespace tutorial_console
         public string getClearMessage()
         {
             resetCulc();
-            option = "number";
             return ClearMessage;
         }
         public string makeId()
@@ -185,12 +181,9 @@ namespace tutorial_console
         {
             option = myOption;
         }
-        public void resetOption()
-        {
-            option = option == "number" || option == "confirem" ? "operation":"number";
-        }
         public void resetCulc()
         {
+            option = "number";
             string id = state == "add"? this.makeId() : (state == "search"?"??": AddSearchculc.First());
             AddSearchculc.Clear(); 
             AddSearchculc.Add(id);
@@ -221,93 +214,93 @@ namespace tutorial_console
         static void Main(string[] args)
         {
             json = JsonNode.Parse(File.ReadAllText("data.json"));
-            SearchCulc = new MyClass("search", "Cancel confirem search", "Successfully search item", "set value or using #ID for delete and &ID for edit item? ", "set operator or using #ID for delete and &ID for edit item? ", "Clear:- Successfully cleare table", "Nav message:- Welcome in search screen", "Confirem:- table search", "Help message:- welcome in search screen", "Value:- search table", null, json["admin"]["culc"].AsObject().Select(x => x.Value.Deserialize<List<string>>().Prepend(x.Key).ToList()).ToList());
+            SearchCulc = new MyClass("search", "Do you aggree delete and edit value (delete/edit)? ", "Edit null value please select value", "Cancel confirem search", "Successfully search item", "set value or using &ID for select item? ", "set operator or or using &ID for select item? ", "Clear:- Successfully cleare table", "Nav message:- Welcome in search screen", "Confirem:- table search", "Help message:- welcome in search screen", "Value:- search table", null, json["admin"]["culc"].AsObject().Select(x => x.Value.Deserialize<List<string>>().Prepend(x.Key).ToList()).ToList());
             CulcClass = SearchCulc;
             showTable(CulcClass.getCulc(), CulcClass.getTitleResultCulc());
             while (true)
             {
-                if (CulcClass != null && CulcClass.getOption() == "confirem")
+                Console.Write(CulcClass.getOption() == "confirem" ? CulcClass.getAgreeConfiremMessage() : (CulcClass.getOption() == "operation" ? CulcClass.getOperatorMessage() : CulcClass.getNumberMessage()));
+                number = Console.ReadLine();
+                if (number == "add" || number == "search" || number == "edit" && EditCulc != null)
                 {
-                    showTable(number.Contains("#") || number.Contains("&") ?CulcClass.setCulc(CulcClass.getCulc().Find(x => x.First() == number.Substring(1)).ToList()):CulcClass.getAddsearch(), number.Contains("#") ? CulcClass.getConfiremDelete() : CulcClass.getConfiremMessage());
-                    CulcClass.resetOption();
-                    Console.Write("Do you aggree Y/N? ");
-                    string confirem = Console.ReadLine();
-
-                    //make delete item
-                    if (number.Contains("#") && confirem == "y")
-                    {
-                        json = JsonNode.Parse(File.ReadAllText("data.json"));
-                        json["admin"]["culc"].AsObject().Remove(number.Substring(1));
-                        saveFile();
-                        Console.WriteLine(CulcClass.getDeleteMessage());
-                    }
-                    // make search item
-                    else if (CulcClass.getState() == "search" && confirem == "y")
-                    {
-                        Console.WriteLine(CulcClass.getSuccessfullyMessage());
-                        //go to edit
-                        EditCulc = new MyClass("edit", "Cancel confirem edit", "Successfully edit item", "Enter your number ? ", "Enter your operator ? ", "Clear:- Successfully cleare table", "Nav message:- Welcome in edit screen", "Confirem:- table edit", "Help message:- welcome in edit screen", "Value:- edit table", SearchCulc.getAddsearch().ToList());
-                        CulcClass = EditCulc;
-                        showTable(CulcClass.getAddsearch(), CulcClass.getTableTitlt());
-                    }
-                    //make edit or add item
-                    else if (confirem == "y")
-                    {
-                        json = JsonNode.Parse(File.ReadAllText("data.json"));
-                        json["admin"]["culc"].AsObject()[CulcClass.getAddsearch().First()] = JsonSerializer.SerializeToNode(CulcClass.getAddsearch().Skip(1));
-                        saveFile();
-                        if (CulcClass.getState() == "add")
-                            CulcClass.resetCulc();
-                        Console.WriteLine(CulcClass.getSuccessfullyMessage());
-                    }
-                    else
-                    {
-                        Console.WriteLine(number.Contains("#")?CulcClass.getConfiremDeleteMessage():CulcClass.getCancelMessage());
-                        showTable(CulcClass.getAddsearch(), CulcClass.getTableTitlt());
-                    }
-                    
-                    //print table heeeeer
+                    CulcClass = number == "search" ? SearchCulc : (number == "edit" ? EditCulc : (AddCulc ?? new MyClass(number, "Do you aggree add Y/N? ", "Edit null value please select value", "Cancel confirem add", "Successfully add item", "Enter your number ? ", "Enter your operator ? ", "Clear:- Successfully cleare table", "Nav message:- Welcome in add screen", "Confirem:- table add", "Help message :- welcome in add item screen", "Value:- add table")));
+                    Console.WriteLine(CulcClass.getNavMessage());
+                    showTable(CulcClass.getAddsearch(), CulcClass.getTableTitlt());
                 }
+                //make delete item
+                else if (CulcClass.getOption() == "confirem" && number == "delete")
+                {
+                    json = JsonNode.Parse(File.ReadAllText("data.json"));
+                    json["admin"]["culc"].AsObject().Remove(CulcClass.getAddsearch().First());
+                    saveFile();
+                    Console.WriteLine(CulcClass.getDeleteMessage());
+                    CulcClass.setOption("operation");
+
+                    CulcClass.resetCulc();
+                }
+                // make search item
+                else if (CulcClass.getOption() == "confirem" && CulcClass.getState() == "search" && number == "edit")
+                {
+                    Console.WriteLine(CulcClass.getSuccessfullyMessage());
+                    //go to edit
+                    EditCulc = new MyClass("edit", "Do you aggree change value Y/N? ", "Edit null value please select value", "Cancel confirem edit", "Successfully edit item", "Enter your number ? ", "Enter your operator ? ", "Clear:- Successfully cleare table", "Nav message:- Welcome in edit screen", "Confirem:- table edit", "Help message:- welcome in edit screen", "Value:- edit table", SearchCulc.getAddsearch().ToList());
+                    CulcClass = EditCulc;
+                    showTable(CulcClass.getAddsearch(), CulcClass.getTableTitlt());
+
+                    SearchCulc.resetCulc();
+                }
+                //make edit or add item
+                else if (CulcClass.getOption() == "confirem" && number == "y")
+                {
+                    json = JsonNode.Parse(File.ReadAllText("data.json"));
+                    json["admin"]["culc"].AsObject()[CulcClass.getAddsearch().First()] = JsonSerializer.SerializeToNode(CulcClass.getAddsearch().Skip(1));
+                    saveFile();
+                    if (CulcClass.getState() == "add")
+                        CulcClass.resetCulc();
+                    else
+                        CulcClass.setOption("operation");
+                    Console.WriteLine(CulcClass.getSuccessfullyMessage());
+                }
+                else if(CulcClass.getOption() == "confirem" && number != "y")
+                {
+                    CulcClass.setOption("operation");
+                    Console.WriteLine(CulcClass.getCancelMessage());
+                    showTable(CulcClass.getAddsearch(), CulcClass.getTableTitlt());
+                }
+
+                //make help and edit and test change value and edit == null
+                else if (number == "clear" || number == "help" || number == "edit" && EditCulc == null || CulcClass.getState() == "edit" && CulcClass.getOption() == "operation" && number == "=" && SearchCulc.getCulc().Exists(x => x.SequenceEqual(CulcClass.getAddsearch())))
+                    Console.WriteLine(number == "clear" ? CulcClass.getClearMessage() : (number == "help" ? CulcClass.getMessageHelp() : (number == "edit" ? CulcClass.getNullMessage() : CulcClass.getValueChangeMessage())));
+
+                else if (CulcClass.getState() == "search" && number.Contains("&") && CulcClass.getCulc().Exists(x => x.First() == number.Substring(1)) ||
+                    CulcClass.getState() != "search" && CulcClass.getOption() == "operation" && number == "=")
+                {
+                    CulcClass.setOption("confirem");
+                    showTable(CulcClass.getState() == "search" ? CulcClass.setCulc(CulcClass.getCulc().Find(x => x.First() == number.Substring(1)).ToList()) : CulcClass.getAddsearch(), CulcClass.getConfiremMessage());
+                }
+
+                //make search by total use max min function
+                //show table culc
+                else if (CulcClass.getState() == "search" && number.Contains("<") || CulcClass.getState() == "search" && number.Contains(">") || number == "lee")
+                    showTable(number == "lee" ? SearchCulc.getCulc() : (CulcClass.getCulc().FindAll(x => number.Contains("<") && int.Parse(x.Last()) < int.Parse(number.Substring(1)) || number.Contains(">") && int.Parse(x.Last()) > int.Parse(number.Substring(1))).ToList()), number == "lee" ? SearchCulc.getTitleResultCulc() : (number.Contains("<") ? CulcClass.getMinimizeMessage() : CulcClass.getMaximizeMessage()));
                 else
                 {
-                    Console.Write(CulcClass.getOption() == "operation" ? CulcClass.getOperatorMessage() : CulcClass.getNumberMessage());
-                    number = Console.ReadLine();
-                    if (number == "add" || number == "search" || number == "edit" && EditCulc != null)
+                    CulcClass.setOption(CulcClass.getOption() == "number" ? "operation" : "number");
+                    CulcClass.getAddsearch().Insert(CulcClass.getAddsearch().Count - 1, number);
+                    try
                     {
-                        CulcClass = number == "search"? SearchCulc : (number == "edit"? EditCulc : (AddCulc ?? new MyClass(number, "Cancel confirem add", "Successfully add item", "Enter your number ? ", "Enter your operator ? ", "Clear:- Successfully cleare table", "Nav message:- Welcome in add screen", "Confirem:- table add", "Help message :- welcome in add item screen", "Value:- add table")));
-                        Console.WriteLine(CulcClass.getNavMessage());
-                        showTable(CulcClass.getAddsearch(), CulcClass.getTableTitlt());
+                        CulcClass.getAddsearch()[CulcClass.getAddsearch().Count - 1] = CulcClass.getState() == "search" ||
+                            CulcClass.getAddsearch().Count == 3 ||
+                            CulcClass.getOption() == "number" ? "??" : new DataTable().Compute(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2).Aggregate((a, b) => a + b), null).ToString();
                     }
-                    //make help and edit and test change value and edit == null
-                    else if (number == "clear" || number == "help" || number == "edit" && EditCulc == null || CulcClass.getState() == "edit" && CulcClass.getOption() == "operation" && number == "=" && SearchCulc.getCulc().Exists(x => x.SequenceEqual(CulcClass.getAddsearch())))
-                        Console.WriteLine(number == "clear"?CulcClass.getClearMessage():(number == "help"? CulcClass.getMessageHelp():(number == "edit"? CulcClass.getNullMessage() : CulcClass.getValueChangeMessage())));
-                    
-                    else if (CulcClass.getState() == "search" && number.Contains("&") && CulcClass.getCulc().Exists(x => x.First() == number.Substring(1))||
-                        CulcClass.getState() == "search" && number.Contains("#") && CulcClass.getCulc().Exists(x => x.First() == number.Substring(1)) || 
-                        CulcClass.getOption() == "operation" && number == "=")
-                        CulcClass.setOption("confirem");
- 
-                    //make search by total use max min function
-                    //show table culc
-                    else if (CulcClass.getState() == "search" && number.Contains("<") || CulcClass.getState() == "search" && number.Contains(">") || number == "lee")
-                        showTable(number == "lee"? SearchCulc.getCulc():(CulcClass.getCulc().FindAll(x => number.Contains("<") && int.Parse(x.Last()) < int.Parse(number.Substring(1)) || number.Contains(">") && int.Parse(x.Last()) > int.Parse(number.Substring(1))).ToList()), number == "lee"?SearchCulc.getTitleResultCulc():(number.Contains("<") ? CulcClass.getMinimizeMessage() : CulcClass.getMaximizeMessage()));       
-                    else
-                    {
-                        CulcClass.resetOption();
-                        CulcClass.getAddsearch().Insert(CulcClass.getAddsearch().Count - 1, number);
-                        try
-                        {
-                            CulcClass.getAddsearch()[CulcClass.getAddsearch().Count - 1] = CulcClass.getState() == "search" ||
-                                CulcClass.getAddsearch().Count == 3 ||
-                                CulcClass.getOption() == "number" ? "??" : new DataTable().Compute(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2).Aggregate((a, b) => a + b), null).ToString();
-                        }
-                        catch { }
-                        if (CulcClass.getState() == "search" && CulcClass.getCulc().FindAll(x => CulcClass.getAddsearch().Count < x.Count && x.GetRange(1, CulcClass.getAddsearch().Count - 2).SequenceEqual(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2))).Any())
-                            showTable(CulcClass.getCulc().FindAll(x => x.GetRange(1, CulcClass.getAddsearch().Count - 2).SequenceEqual(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2))), CulcClass.getFoundCulcMessage());
-                        showTable(CulcClass.getAddsearch(), CulcClass.getTableTitlt());
-                    }
-                    InitMyClass();
+                    catch { }
+                    if (CulcClass.getState() == "search" && CulcClass.getCulc().FindAll(x => CulcClass.getAddsearch().Count < x.Count && x.GetRange(1, CulcClass.getAddsearch().Count - 2).SequenceEqual(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2))).Any())
+                        showTable(CulcClass.getCulc().FindAll(x => x.GetRange(1, CulcClass.getAddsearch().Count - 2).SequenceEqual(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2))), CulcClass.getFoundCulcMessage());
+                    showTable(CulcClass.getAddsearch(), CulcClass.getTableTitlt());
                 }
+                InitMyClass();
+
+
             }
         }
         static void saveFile()
