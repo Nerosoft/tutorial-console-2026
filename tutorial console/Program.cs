@@ -74,11 +74,16 @@ namespace tutorial_console
             return AgreeConfiremMessage;
         }
 
-        public string getSuccessfullyMessage(string value = "")
+        public void getSuccessfullyMessage(string message = null)
         {
             resetCulc();
-            return value == "d" ? DeleteMessage : SuccessfullyMessage;
+            Console.WriteLine(message ?? SuccessfullyMessage);
         }
+        public string getDeleteMessage()
+        {
+            return DeleteMessage;
+        }
+      
         public string getCancelMessage()
         {
             return CancelMessage;
@@ -228,7 +233,8 @@ namespace tutorial_console
                 //make edit or add item
                 else if (CulcClass.getOption() == "confirem" && number == "d" && json["admin"]["culc"].AsObject().Remove(CulcClass.getAddsearch().First()) || CulcClass.getOption() == "confirem" && number == "y" && (json["admin"]["culc"].AsObject()[CulcClass.getAddsearch().First()] = JsonSerializer.SerializeToNode(CulcClass.getAddsearch().Skip(1))) != null)
                 {
-                    saveFile(CulcClass.getSuccessfullyMessage(number));
+                    saveFile();
+                    CulcClass.getSuccessfullyMessage(number != "d" ? null: CulcClass.getDeleteMessage());
                     if (CulcClass.getState() == "edit")
                     {
                         CulcClass = SearchCulc;
@@ -262,7 +268,7 @@ namespace tutorial_console
                 InitMyClass();
             }
         }
-        static void saveFile(string successfullyMessage)
+        static void saveFile()
         {
             File.WriteAllText("data.json", json.ToJsonString(
                 new JsonSerializerOptions
@@ -270,7 +276,6 @@ namespace tutorial_console
                     WriteIndented = true,
                     Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
                 }));
-            Console.WriteLine(successfullyMessage);
             json = JsonNode.Parse(File.ReadAllText("data.json"));
             SearchCulc.setMyCulc(json["admin"]["culc"].AsObject().Select(x => x.Value.Deserialize<List<string>>().Prepend(x.Key).ToList()).ToList());
             showTable(SearchCulc.getCulc(), SearchCulc.getTitleResultCulc());
