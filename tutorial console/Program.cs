@@ -42,32 +42,33 @@ namespace tutorial_console
 
         List<List<string>> myculc = new List<List<string>>();
         List<string> AddSearchculc;
-        public MyClass(string state, string agreeConfiremMessage, string nullMessage, string cancelMessage, string successfullyMessage, string numberMessage, string operatorMessage, string clearMessage, string navMessage, string confiremMessage, string helpMessage, string tableTitlt, List<string> select = null, List<List<string>> culc = null)
+        public MyClass(string state, JsonNode language, List<string> select = null, List<List<string>> culc = null)
         {
             this.state = state;
-            HelpMessage = helpMessage;
-            TableTitlt = tableTitlt;
-            ConfiremMessage = confiremMessage;
-            NavMessage = navMessage;
-            ClearMessage = clearMessage;
-            NumberMessage = numberMessage;
-            OperatorMessage = operatorMessage;
-            SuccessfullyMessage = successfullyMessage;
-            CancelMessage = cancelMessage;
-            NullMessage = nullMessage;
-            AgreeConfiremMessage = agreeConfiremMessage;
+            HelpMessage = language["HelpMessage"].GetValue<string>();
+            TableTitlt = language["TableTitlt"].GetValue<string>();
+            ConfiremMessage = language["ConfiremMessage"].GetValue<string>();
+            NavMessage = language["NavMessage"].GetValue<string>();
+            ClearMessage = language["ClearMessage"].GetValue<string>();
+            NumberMessage = language["NumberMessage"].GetValue<string>();
+            OperatorMessage = language["OperatorMessage"].GetValue<string>();
+            SuccessfullyMessage = language["SuccessfullyMessage"].GetValue<string>();
+            CancelMessage = language["CancelMessage"].GetValue<string>();
+            NullMessage = language["NullMessage"].GetValue<string>();
+            AgreeConfiremMessage = language["AgreeConfiremMessage"].GetValue<string>();
             AddSearchculc = select?? new List<string>() { state == "search" ? "??" : makeId(), "??" };
             option = state == "edit"? "operation": "number";       
             if (state == "search")
             {
                 myculc = culc;
-                TitleResultCulc = "Table all result culc";
-                FoundCulcMessage = "Found:- culc table";
-                MinimizeMessage = "Minimize:- Found value table";
-                MaximizeMessage = "MaximizeM:- Found value table";
-                DeleteMessage = "Successfully delete item";
-            }else if(state == "edit")
-                ValueChangeMessage = "No change value";
+                TitleResultCulc = language["TitleResultCulc"].GetValue<string>();
+                FoundCulcMessage = language["FoundCulcMessage"].GetValue<string>();
+                MinimizeMessage = language["MinimizeMessage"].GetValue<string>();
+                MaximizeMessage = language["MaximizeMessage"].GetValue<string>();
+                DeleteMessage = language["DeleteMessage"].GetValue<string>();
+            }
+            else if(state == "edit")
+                ValueChangeMessage = language["ValueChangeMessage"].GetValue<string>();
         }
         public string getAgreeConfiremMessage()
         {
@@ -208,19 +209,7 @@ namespace tutorial_console
         {
             json = JsonNode.Parse(File.ReadAllText("data.json"));
             language = json["admin"]["english"].AsObject();
-            SearchCulc = new MyClass("search", 
-                language["Search"]["AgreeConfiremMessage"].GetValue<string>(),
-                language["Search"]["NullMessage"].GetValue<string>(),
-                language["Search"]["CancelMessage"].GetValue<string>(),
-                language["Search"]["SuccessfullyMessage"].GetValue<string>(),
-                language["Search"]["NumberMessage"].GetValue<string>(),
-                language["Search"]["OperatorMessage"].GetValue<string>(),
-                language["Search"]["ClearMessage"].GetValue<string>(),
-                language["Search"]["NavMessage"].GetValue<string>(),
-                language["Search"]["ConfiremMessage"].GetValue<string>(),
-                language["Search"]["HelpMessage"].GetValue<string>(),
-                language["Search"]["TableTitlt"].GetValue<string>(),
-                null, json["admin"]["culc"].AsObject().Select(x => x.Value.Deserialize<List<string>>().Prepend(x.Key).ToList()).ToList());
+            SearchCulc = new MyClass("search", language["Search"], null, json["admin"]["culc"].AsObject().Select(x => x.Value.Deserialize<List<string>>().Prepend(x.Key).ToList()).ToList());
             CulcClass = SearchCulc;
             showTable(CulcClass.getCulc(), CulcClass.getTitleResultCulc());
             while (true)
@@ -231,18 +220,7 @@ namespace tutorial_console
                 if (number == "add" || number == "search" || number == "edit" && EditCulc != null)
                 {
                     CulcClass = number == "search" ? SearchCulc : (number == "edit" ? EditCulc : (AddCulc ?? 
-                        new MyClass(number,
-                        language["Add"]["AgreeConfiremMessage"].GetValue<string>(),
-                        language["Add"]["NullMessage"].GetValue<string>(),
-                        language["Add"]["CancelMessage"].GetValue<string>(),
-                        language["Add"]["SuccessfullyMessage"].GetValue<string>(),
-                        language["Add"]["NumberMessage"].GetValue<string>(),
-                        language["Add"]["OperatorMessage"].GetValue<string>(),
-                        language["Add"]["ClearMessage"].GetValue<string>(),
-                        language["Add"]["NavMessage"].GetValue<string>(),
-                        language["Add"]["ConfiremMessage"].GetValue<string>(),
-                        language["Add"]["HelpMessage"].GetValue<string>(),
-                        language["Add"]["TableTitlt"].GetValue<string>())));
+                        new MyClass(number, language["Add"])));
                     Console.WriteLine(CulcClass.getNavMessage());
                 }
                 //make search by total use max min function
@@ -252,40 +230,26 @@ namespace tutorial_console
                 // make search item
                 else if (CulcClass.getOption() == "confirem" && CulcClass.getState() == "search" && number == "e")
                 {
-                    EditCulc = new MyClass("edit",
-                        language["Edit"]["AgreeConfiremMessage"].GetValue<string>(),
-                        language["Edit"]["NullMessage"].GetValue<string>(),
-                        language["Edit"]["CancelMessage"].GetValue<string>(),
-                        language["Edit"]["SuccessfullyMessage"].GetValue<string>(),
-                        language["Edit"]["NumberMessage"].GetValue<string>(),
-                        language["Edit"]["OperatorMessage"].GetValue<string>(),
-                        language["Edit"]["ClearMessage"].GetValue<string>(),
-                        language["Edit"]["NavMessage"].GetValue<string>(),
-                        language["Edit"]["ConfiremMessage"].GetValue<string>(),
-                        language["Edit"]["HelpMessage"].GetValue<string>(),
-                        language["Edit"]["TableTitlt"].GetValue<string>(),
-                        CulcClass.getAddsearch().ToList());
+                    EditCulc = new MyClass("edit",language["Edit"], CulcClass.getAddsearch().ToList());
                     CulcClass = EditCulc;
                     SearchCulc.resetCulc();
                     Console.WriteLine(SearchCulc.getSuccessfullyMessage());
                 }
                 //make edit or add item
-                else if (CulcClass.getOption() == "confirem" && number == "d" && json["admin"]["culc"].AsObject().Remove(CulcClass.getAddsearch().First()) || CulcClass.getOption() == "confirem" && number == "y" && (json["admin"]["culc"].AsObject()[CulcClass.getAddsearch().First()] = JsonSerializer.SerializeToNode(CulcClass.getAddsearch().Skip(1))) != null)
+                else if (
+                    CulcClass.getOption() == "confirem" && number == "d" && EditCulc != null && EditCulc.getAddsearch().First() == CulcClass.getAddsearch().First() && json["admin"]["culc"].AsObject().Remove(CulcClass.getAddsearch().First()) && (EditCulc = null) == null||
+                    CulcClass.getOption() == "confirem" && number == "d" && json["admin"]["culc"].AsObject().Remove(CulcClass.getAddsearch().First()) ||
+                    CulcClass.getOption() == "confirem" && number == "y" && (json["admin"]["culc"].AsObject()[CulcClass.getAddsearch().First()] = JsonSerializer.SerializeToNode(CulcClass.getAddsearch().Skip(1))) != null)
                 {
                     File.WriteAllText("data.json", json.ToJsonString(new JsonSerializerOptions{WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping}));
                     json = JsonNode.Parse(File.ReadAllText("data.json"));
                     SearchCulc.setMyCulc(json["admin"]["culc"].AsObject().Select(x => x.Value.Deserialize<List<string>>().Prepend(x.Key).ToList()).ToList());
                     showTable(SearchCulc.getCulc(), SearchCulc.getTitleResultCulc());
                     Console.WriteLine(number == "d"? CulcClass.getDeleteMessage() : CulcClass.getSuccessfullyMessage());
-                    if (CulcClass.getState() == "edit")
-                    {
-                        CulcClass = SearchCulc;
-                        EditCulc = null;
-                        continue;
-                    }
-                    else if (number == "d" && EditCulc != null && EditCulc.getAddsearch().First() == SearchCulc.getAddsearch().First())
-                        EditCulc = null;
-                    CulcClass.resetCulc();
+                    if(CulcClass.getState() != "edit")
+                        CulcClass.resetCulc();
+                    else
+                        CulcClass.setOption("operation");
                 }
                 else if(CulcClass.getOption() == "confirem" && number != "y")
                 {
