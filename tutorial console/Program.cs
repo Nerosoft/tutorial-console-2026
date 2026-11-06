@@ -206,17 +206,6 @@ namespace tutorial_console
 
         static void Main(string[] args)
         {
-            //string agreeConfiremMessage, 
-            //    string nullMessage, 
-            //    string cancelMessage, 
-            //    string successfullyMessage, 
-            //    string numberMessage, 
-            //    string operatorMessage, 
-            //    string clearMessage, 
-            //    string navMessage, 
-            //    string confiremMessage, 
-            //    string helpMessage, 
-            //    string tableTitlt, 
             json = JsonNode.Parse(File.ReadAllText("data.json"));
             language = json["admin"]["english"].AsObject();
             SearchCulc = new MyClass("search", 
