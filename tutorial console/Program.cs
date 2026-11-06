@@ -18,6 +18,7 @@ namespace tutorial_console
     //make resit option and culc
     //make change  "Enter your operator ? " : "Enter your number ? "
     //mesage agree Y/N
+    //make change search and edit list 
     internal class MyClass
     {
         string HelpMessage;
@@ -246,10 +247,15 @@ namespace tutorial_console
                     SearchCulc.setMyCulc(json["admin"]["culc"].AsObject().Select(x => x.Value.Deserialize<List<string>>().Prepend(x.Key).ToList()).ToList());
                     showTable(SearchCulc.getCulc(), SearchCulc.getTitleResultCulc());
                     Console.WriteLine(number == "d"? CulcClass.getDeleteMessage() : CulcClass.getSuccessfullyMessage());
-                    if(CulcClass.getState() != "edit")
-                        CulcClass.resetCulc();
-                    else
+                    if (CulcClass.getState() == "edit")
+                    {
                         CulcClass.setOption("operation");
+                        if(CulcClass.getAddsearch().First() == SearchCulc.getAddsearch().First())
+                            SearchCulc.resetCulc();
+                    }
+                    else
+                        CulcClass.resetCulc();
+
                 }
                 else if(CulcClass.getOption() == "confirem" && number != "y")
                 {
@@ -273,7 +279,6 @@ namespace tutorial_console
                     catch { }
                     if(CulcClass.getState() == "search" && CulcClass.getCulc().FindAll(x => CulcClass.getAddsearch().Count < x.Count && x.GetRange(1, CulcClass.getAddsearch().Count - 2).SequenceEqual(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2))).Any())
                         showTable(CulcClass.getCulc().FindAll(x => CulcClass.getAddsearch().Count < x.Count && x.GetRange(1, CulcClass.getAddsearch().Count - 2).SequenceEqual(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2))), CulcClass.getFoundCulcMessage());
-
                 }
                 InitMyClass();
             }
