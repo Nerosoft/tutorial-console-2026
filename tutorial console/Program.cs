@@ -30,10 +30,10 @@ namespace tutorial_console
         string NullMessage;
         string DeleteMessage;
         string AgreeConfiremMessage;
-
+        string NullTotal;
         List<List<string>> myculc = new List<List<string>>();
         List<string> AddSearchculc;
-        public MyClass(string state, JsonNode language, List<string> select = null, List<List<string>> culc = null)
+        public MyClass(string state, string nullTotal,  JsonNode language, List<string> select = null, List<List<string>> culc = null)
         {
             this.state = state;
             HelpMessage = language["HelpMessage"].GetValue<string>();
@@ -47,7 +47,8 @@ namespace tutorial_console
             CancelMessage = language["CancelMessage"].GetValue<string>();
             NullMessage = language["NullMessage"].GetValue<string>();
             AgreeConfiremMessage = language["AgreeConfiremMessage"].GetValue<string>();
-            AddSearchculc = select?? new List<string>() { state == "search" ? "??" : makeId(), "??" };
+            NullTotal = nullTotal;
+            AddSearchculc = select?? new List<string>() { state == "search" ? NullTotal : makeId(), NullTotal };
             option = state == "edit"? "operation": "number";       
             if (state == "search")
             {
@@ -167,10 +168,10 @@ namespace tutorial_console
         public void resetCulc()
         {
             option = "number";
-            string id = state == "add"? this.makeId() : (state == "search"?"??": AddSearchculc.First());
+            string id = state == "add"? this.makeId() : (state == "search"?NullTotal: AddSearchculc.First());
             AddSearchculc.Clear(); 
             AddSearchculc.Add(id);
-            AddSearchculc.Add("??");
+            AddSearchculc.Add(NullTotal);
         }
         public List<string> setCulc(List<string> culc)
         {
@@ -200,12 +201,11 @@ namespace tutorial_console
         static void Main(string[] args)
         {
             string DbName = "admin";
-            //Console.WriteLine("Select your database? ");
-            //DbName = Console.ReadLine();
             json = JsonNode.Parse(File.ReadAllText("data.json"));
             language = json[DbName][json[DbName]["language"].GetValue<string>()].AsObject();
             color = json[DbName][json[DbName]["style"].GetValue<string>()].AsObject();
-            SearchCulc = new MyClass("search", language["Search"], null, json[DbName]["culc"].AsObject().Select(x => x.Value.Deserialize<List<string>>().Prepend(x.Key).ToList()).ToList());
+            string nullTotal = language["Table"]["NullTotal"].GetValue<string>();
+            SearchCulc = new MyClass("search", nullTotal, language["Search"], null, json[DbName]["culc"].AsObject().Select(x => x.Value.Deserialize<List<string>>().Prepend(x.Key).ToList()).ToList());
             CulcClass = SearchCulc;
             showTable(CulcClass.getCulc(), CulcClass.getTitleResultCulc());
             while (true)
@@ -215,26 +215,22 @@ namespace tutorial_console
                 number = Console.ReadLine();
                 if (number == "add" || number == "search" || number == "edit" && EditCulc != null)
                 {
-                    CulcClass = number == "search" ? SearchCulc : (number == "edit" ? EditCulc : (AddCulc ?? 
-                        new MyClass(number, language["Add"])));
+                    CulcClass = number == "search" ? SearchCulc : (number == "edit" ? EditCulc : (AddCulc ?? new MyClass(number, nullTotal, language["Add"])));
                     PrintColorLine(CulcClass.getNavMessage(), GetColor("Nav"));
                 }
                 //make search by total use max min function
                 //show table culc
                 else if (CulcClass.getState() == "search" && number.Contains("<") || CulcClass.getState() == "search" && number.Contains(">") || number == "lee")
-                    showTable(number == "lee" ? SearchCulc.getCulc() : (CulcClass.getCulc().FindAll(x => number.Contains("<") && int.Parse(x.Last()) < int.Parse(number.Substring(1)) || number.Contains(">") && int.Parse(x.Last()) > int.Parse(number.Substring(1))).ToList()), number == "lee" ? SearchCulc.getTitleResultCulc() : (number.Contains("<") ? CulcClass.getMinimizeMessage() : CulcClass.getMaximizeMessage()));
+                    showTable(number == "lee" ? SearchCulc.getCulc() : (CulcClass.getCulc().FindAll(x => number.Contains("<") && int.TryParse(number.Substring(1), out int val) && int.TryParse(x.Last(), out int val2) && val2 < int.Parse(number.Substring(1)) || number.Contains(">") && int.TryParse(number.Substring(1), out int val3) && int.TryParse(x.Last(), out int val4) && val4 > int.Parse(number.Substring(1))).ToList()), number == "lee" ? SearchCulc.getTitleResultCulc() : (number.Contains("<") ? CulcClass.getMinimizeMessage() : CulcClass.getMaximizeMessage()));
                 // make search item
                 else if (CulcClass.getOption() == "confirem" && CulcClass.getState() == "search" && number == "e")
                 {
-                    EditCulc = new MyClass("edit",language["Edit"], CulcClass.getAddsearch().ToList());
+                    EditCulc = new MyClass("edit", nullTotal, language["Edit"], CulcClass.getAddsearch().ToList());
                     PrintMessage();
                     CulcClass = EditCulc;
                 }
                 //make edit or add item
-                else if (
-                    CulcClass.getOption() == "confirem" && number == "d" && EditCulc != null && EditCulc.getAddsearch().First() == CulcClass.getAddsearch().First() && json[DbName]["culc"].AsObject().Remove(CulcClass.getAddsearch().First()) && (EditCulc = null) == null||
-                    CulcClass.getOption() == "confirem" && number == "d" && json[DbName]["culc"].AsObject().Remove(CulcClass.getAddsearch().First()) ||
-                    CulcClass.getOption() == "confirem" && number == "y" && (json[DbName]["culc"].AsObject()[CulcClass.getAddsearch().First()] = JsonSerializer.SerializeToNode(CulcClass.getAddsearch().Skip(1))) != null)
+                else if (CulcClass.getOption() == "confirem" && number == "d" && EditCulc != null && EditCulc.getAddsearch().First() == CulcClass.getAddsearch().First() && json[DbName]["culc"].AsObject().Remove(CulcClass.getAddsearch().First()) && (EditCulc = null) == null||CulcClass.getOption() == "confirem" && number == "d" && json[DbName]["culc"].AsObject().Remove(CulcClass.getAddsearch().First()) || CulcClass.getOption() == "confirem" && number == "y" && (json[DbName]["culc"].AsObject()[CulcClass.getAddsearch().First()] = JsonSerializer.SerializeToNode(CulcClass.getAddsearch().Skip(1))) != null)
                 {
                     File.WriteAllText("data.json", json.ToJsonString(new JsonSerializerOptions{WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping}));
                     json = JsonNode.Parse(File.ReadAllText("data.json"));
@@ -251,7 +247,7 @@ namespace tutorial_console
                 //make help and edit and test change value and edit == null
                 else if (number == "clear" || number == "help" || number == "edit" && EditCulc == null || CulcClass.getState() == "edit" && CulcClass.getOption() == "operation" && number == "=" && SearchCulc.getCulc().Exists(x => x.SequenceEqual(CulcClass.getAddsearch())))
                     PrintColorLine(number == "clear" ? CulcClass.getClearMessage() : (number == "help" ? CulcClass.getMessageHelp() : (number == "edit" ? CulcClass.getNullMessage() : CulcClass.getValueChangeMessage())), GetColor("Message"));
-                else if (CulcClass.getState() == "search" && number.Contains("&") && CulcClass.getCulc().Exists(x => x.First() == number.Substring(1)) ||CulcClass.getState() != "search" && CulcClass.getOption() == "operation" && number == "=")
+                else if (CulcClass.getState() == "search" && number.Contains("&") && CulcClass.getCulc().Exists(x => x.First() == number.Substring(1)) ||CulcClass.getState() != "search" && CulcClass.getOption() == "operation" && number == "=" && CulcClass.getAddsearch().Count >= 5)
                     CulcClass.setOption("confirem");
                 else
                 {
@@ -259,7 +255,7 @@ namespace tutorial_console
                     CulcClass.getAddsearch().Insert(CulcClass.getAddsearch().Count - 1, number);
                     try
                     {
-                        CulcClass.getAddsearch()[CulcClass.getAddsearch().Count - 1] = CulcClass.getState() == "search" ||CulcClass.getAddsearch().Count == 3 ||CulcClass.getOption() == "number" ? "??" : new DataTable().Compute(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2).Aggregate((a, b) => a + b), null).ToString();
+                        CulcClass.getAddsearch()[CulcClass.getAddsearch().Count - 1] = CulcClass.getState() == "search" ||CulcClass.getAddsearch().Count == 3 ||CulcClass.getOption() == "number" ? nullTotal : new DataTable().Compute(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2).Aggregate((a, b) => a + b), null).ToString();
                     }
                     catch { }
                     if(CulcClass.getState() == "search" && CulcClass.getCulc().FindAll(x => CulcClass.getAddsearch().Count < x.Count && x.GetRange(1, CulcClass.getAddsearch().Count - 2).SequenceEqual(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2))).Any())
