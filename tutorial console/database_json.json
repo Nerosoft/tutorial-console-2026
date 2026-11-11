@@ -1,7 +1,6 @@
 ﻿{
   "admin": {
     "language": "english",
-    "style": "light",
     "culc": {
       "1": [
         "1",
@@ -20,29 +19,34 @@
         "+",
         "100",
         "200"
+      ],
+      "b9d": [
+        "1",
+        "+",
+        "1",
+        "+",
+        "1",
+        "3"
       ]
     },
-    "light": {
-      "DataTable": "darkgreen",
-      "TitleTable": "darkyellow",
-      "Table": "blue",
-      "Confirem": "yellow",
-      "Value": "Green",
-      "Operator": "Magenta",
-      "Nav": "cyan",
-      "Message": "darkred"
-    },
     "english": {
-      "Table": {
+      "Search": {
+        "DataTable": "darkgreen",
+        "TitleTable": "darkyellow",
+        "Table": "blue",
+        "Confirem": "yellow",
+        "Value": "green",
+        "Operator": "magenta",
+        "Nav": "cyan",
+        "Message": "darkred",
         "Colume": "column",
         "Total": "Total",
         "Empty": "empty",
         "Id": "ID",
-        "Shep|": "|",
-        "Shep-": "-",
-        "NullTotal": "??"
-      },
-      "Search": {
+        "ShepSlash": "|",
+        "ShepDash": "-",
+        "option": "number",
+        "state": "search",
         "HelpMessage": "Help message:- welcome in search screen",
         "TableTitlt": "Value:- search table",
         "ConfiremMessage": "Confirem:- table search",
@@ -58,9 +62,30 @@
         "CancelMessage": "Cancel confirem search",
         "NullMessage": "Edit null value please select value",
         "DeleteMessage": "Successfully delete item",
-        "AgreeConfiremMessage": "Do you aggree delete(d) and edit(e) value? "
+        "AgreeConfiremMessage": "Do you aggree delete(d) and edit(e) value? ",
+        "NullTotal": "??",
+        "AddSearchculc": [
+          "??",
+          "??"
+        ]
       },
       "Add": {
+        "DataTable": "darkgreen",
+        "TitleTable": "darkyellow",
+        "Table": "blue",
+        "Confirem": "yellow",
+        "Value": "green",
+        "Operator": "magenta",
+        "Nav": "cyan",
+        "Message": "darkred",
+        "Colume": "column",
+        "Total": "Total",
+        "Empty": "empty",
+        "Id": "ID",
+        "ShepSlash": "|",
+        "ShepDash": "-",
+        "option": "number",
+        "state": "add",
         "HelpMessage": "Help message:- welcome in add screen",
         "TableTitlt": "Value:- Add table",
         "ConfiremMessage": "Confirem:- table add",
@@ -71,9 +96,30 @@
         "SuccessfullyMessage": "Successfully add item",
         "CancelMessage": "Cancel confirem add",
         "NullMessage": "Edit null value please select value",
-        "AgreeConfiremMessage": "Do you aggree add Y/N? "
+        "AgreeConfiremMessage": "Do you aggree add Y/N? ",
+        "NullTotal": "??",
+        "AddSearchculc": [
+          "??",
+          "??"
+        ]
       },
       "Edit": {
+        "DataTable": "darkgreen",
+        "TitleTable": "darkyellow",
+        "Table": "blue",
+        "Confirem": "yellow",
+        "Value": "green",
+        "Operator": "magenta",
+        "Nav": "cyan",
+        "Message": "darkred",
+        "Colume": "column",
+        "Total": "Total",
+        "Empty": "empty",
+        "Id": "ID",
+        "ShepSlash": "|",
+        "ShepDash": "-",
+        "option": "operation",
+        "state": "edit",
         "HelpMessage": "Help message:- welcome in edit screen",
         "TableTitlt": "Value:- Edit table",
         "ConfiremMessage": "Confirem:- table edit",
@@ -85,7 +131,12 @@
         "CancelMessage": "Cancel confirem edit",
         "NullMessage": "Edit null value please select value",
         "AgreeConfiremMessage": "Do you aggree edit Y/N? ",
-        "ValueChangeMessage": "No change value"
+        "ValueChangeMessage": "No change value",
+        "NullTotal": "??",
+        "AddSearchculc": [
+          "??",
+          "??"
+        ]
       }
     }
   }
