@@ -200,7 +200,7 @@ namespace tutorial_console
         public void resetCulc()
         {
             option = "number";
-            string id = state == "search" || state == "add"?NullTotal: AddSearchculc.First();
+            string id = state == "edit"?AddSearchculc.First():NullTotal;
             AddSearchculc.Clear(); 
             AddSearchculc.Add(id);
             AddSearchculc.Add(NullTotal);
