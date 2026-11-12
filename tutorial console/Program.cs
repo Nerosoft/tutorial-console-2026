@@ -11,23 +11,10 @@ namespace tutorial_console
 {
     internal class MyClass
     {
-        public string DataTable { get; set; }
-        public string TitleTable {get; set;}
-        public string Table {get; set;}
-        public string Confirem {get; set;}
-        public string Value {get; set;}
-        public string Operator {get; set;}
-        public string Nav {get; set;}
-        public string Message {get; set; }
-
         public string Colume { get; set; }
         public string Total { get; set; }
         public string Empty { get; set; }
         public string Id { get; set; }
-        public string ShepSlash { get; set; }
-        public string ShepDash { get; set; }
-
-
         public string HelpMessage { get; set; }
         public string TableTitlt { get; set; }
         public string option { get; set; }
@@ -62,37 +49,6 @@ namespace tutorial_console
         }
         public string getId(){
             return Id;
-        }
-        public string getShepSlash(){
-            return ShepSlash;
-        }
-        public string getShepDash(){
-            return ShepDash;
-        }
-        public string getDataTable()
-        {
-            return DataTable;
-        }
-        public string getTitleTable() {
-            return TitleTable;
-        }
-        public string getTable(){
-            return Table;
-        }
-        public string getConfirem(){
-            return Confirem;
-        }
-        public string getValue(){
-            return Value;
-        }
-        public string getOperator(){
-            return Operator;
-        }
-        public string getNav(){
-            return Nav;
-        }
-        public string getMessage(){
-            return Message;
         }
         public string getNullTotal()
         {
@@ -219,6 +175,60 @@ namespace tutorial_console
             return this.state;
         }
     }
+    class Style
+    {
+        public string DataTable { get; set; }
+        public string TitleTable { get; set; }
+        public string Table { get; set; }
+        public string Confirem { get; set; }
+        public string Value { get; set; }
+        public string Operator { get; set; }
+        public string Nav { get; set; }
+        public string Message { get; set; }
+        public string ShepSlash { get; set; }
+        public string ShepDash { get; set; }
+
+        public string getDataTable()
+        {
+            return DataTable;
+        }
+        public string getTitleTable()
+        {
+            return TitleTable;
+        }
+        public string getTable()
+        {
+            return Table;
+        }
+        public string getConfirem()
+        {
+            return Confirem;
+        }
+        public string getValue()
+        {
+            return Value;
+        }
+        public string getOperator()
+        {
+            return Operator;
+        }
+        public string getNav()
+        {
+            return Nav;
+        }
+        public string getMessage()
+        {
+            return Message;
+        }
+        public string getShepSlash()
+        {
+            return ShepSlash;
+        }
+        public string getShepDash()
+        {
+            return ShepDash;
+        }
+    }
     internal class Program
     {
         static string number;
@@ -226,27 +236,30 @@ namespace tutorial_console
         static MyClass SearchCulc;
         static MyClass AddCulc;
         static MyClass EditCulc;
-        static MyClass CulcClass; 
+        static MyClass CulcClass;
+        static Style MyStyle;
         static string language;
-
+        static string style;
         static void Main(string[] args)
         {
             string DbName = "admin";
             json = JsonNode.Parse(File.ReadAllText("data.json"));
             language = json[DbName]["language"].GetValue<string>();
+            style = json[DbName]["style"].GetValue<string>();
             SearchCulc = json[DbName][language]["Search"].Deserialize<MyClass>();
+            MyStyle = json[DbName][style].Deserialize<Style>();
             SearchCulc.setMyCulc(json[DbName]["culc"].AsObject().Select(x => x.Value.Deserialize<List<string>>().Prepend(x.Key).ToList()).ToList());
             CulcClass = SearchCulc;
             showTable(CulcClass.getCulc(), CulcClass.getTitleResultCulc());
             while (true)
             {
                 showTable(CulcClass.getOption() == "confirem" && CulcClass.getState() == "search" && number.Contains("&") ?  CulcClass.setCulc(CulcClass.getCulc().Find(x => x.First() == number.Substring(1)).ToList()):CulcClass.getAddsearch(), CulcClass.getOption() == "confirem"? CulcClass.getConfiremMessage() : CulcClass.getTableTitlt());
-                PrintColor(CulcClass.getOption() == "confirem" ? CulcClass.getAgreeConfiremMessage() :(CulcClass.getOption() == "operation" ? CulcClass.getOperatorMessage() : CulcClass.getNumberMessage()), CulcClass.getOption() == "confirem" ?GetColor(CulcClass.getConfirem()) : (CulcClass.getOption() == "operation" ? GetColor(CulcClass.getValue()) : GetColor(CulcClass.getOperator())));
+                PrintColor(CulcClass.getOption() == "confirem" ? CulcClass.getAgreeConfiremMessage() :(CulcClass.getOption() == "operation" ? CulcClass.getOperatorMessage() : CulcClass.getNumberMessage()), CulcClass.getOption() == "confirem" ?GetColor(MyStyle.getConfirem()) : (CulcClass.getOption() == "operation" ? GetColor(MyStyle.getValue()) : GetColor(MyStyle.getOperator())));
                 number = Console.ReadLine();
                 if (number == "add" || number == "search" || number == "edit" && EditCulc != null)
                 {
                     CulcClass = number == "search" ? SearchCulc : (number == "edit" ? EditCulc : (AddCulc ?? json[DbName][language]["Add"].Deserialize<MyClass>()));
-                    PrintColorLine(CulcClass.getNavMessage(), GetColor(CulcClass.getNav()));
+                    PrintColorLine(CulcClass.getNavMessage(), GetColor(MyStyle.getNav()));
                 }
                 //make search by total use max min function
                 //show table culc
@@ -272,12 +285,12 @@ namespace tutorial_console
                 else if(CulcClass.getOption() == "confirem" && number != "y")
                 {
                     CulcClass.setOption("operation");
-                    PrintColorLine(CulcClass.getCancelMessage(), GetColor(CulcClass.getMessage()));
+                    PrintColorLine(CulcClass.getCancelMessage(), GetColor(MyStyle.getMessage()));
                 }
 
                 //make help and edit and test change value and edit == null
                 else if (number == "clear" || number == "help" || number == "edit" && EditCulc == null || CulcClass.getState() == "edit" && CulcClass.getOption() == "operation" && number == "=" && SearchCulc.getCulc().Exists(x => x.SequenceEqual(CulcClass.getAddsearch())))
-                    PrintColorLine(number == "clear" ? CulcClass.getClearMessage() : (number == "help" ? CulcClass.getMessageHelp() : (number == "edit" ? CulcClass.getNullMessage() : CulcClass.getValueChangeMessage())), GetColor(CulcClass.getMessage()));
+                    PrintColorLine(number == "clear" ? CulcClass.getClearMessage() : (number == "help" ? CulcClass.getMessageHelp() : (number == "edit" ? CulcClass.getNullMessage() : CulcClass.getValueChangeMessage())), GetColor(MyStyle.getMessage()));
                 else if (CulcClass.getState() == "search" && number.Contains("&") && CulcClass.getCulc().Exists(x => x.First() == number.Substring(1)) ||CulcClass.getState() != "search" && CulcClass.getOption() == "operation" && number == "=" && CulcClass.getAddsearch().Count >= 5)
                     CulcClass.setOption("confirem");
                 else
@@ -317,7 +330,7 @@ namespace tutorial_console
             }
             else
                 CulcClass.resetCulc();
-            PrintColorLine(number == "d" ? CulcClass.getDeleteMessage() : CulcClass.getSuccessfullyMessage(), GetColor(CulcClass.getMessage()));
+            PrintColorLine(number == "d" ? CulcClass.getDeleteMessage() : CulcClass.getSuccessfullyMessage(), GetColor(MyStyle.getMessage()));
         }
         static void showTable<T>(T culc2, string title)
         {
@@ -331,7 +344,7 @@ namespace tutorial_console
             int count = culc.Max(num => num.Count),
                 word = Math.Max(Math.Max(CulcClass.getColume().Length, CulcClass.getEmpty().Length), culc.SelectMany(x => x).Max(x => x.Length)),
                 lineSize = ((word * count) + count);
-            displayLine(lineSize, GetColor(CulcClass.getTitleTable()), GetColor(CulcClass.getTable()), title);
+            displayLine(lineSize, GetColor(MyStyle.getTitleTable()), GetColor(MyStyle.getTable()), title);
             for (int v = 0; v < culc.Count; v++)
             {
                 culc[v].InsertRange(culc[v].Count - 1, Enumerable.Repeat(v == 0 ? CulcClass.getColume() : CulcClass.getEmpty(), count - culc[v].Count));
@@ -343,10 +356,10 @@ namespace tutorial_console
                         for (int j = 0; j < abc; j++)
                             culc[v][i] += " ";
                     }
-                    PrintColor(CulcClass.getShepSlash(), GetColor(CulcClass.getTable()));
-                    PrintColor(culc[v][i], GetColor(CulcClass.getDataTable()));
+                    PrintColor(MyStyle.getShepSlash(), GetColor(MyStyle.getTable()));
+                    PrintColor(culc[v][i], GetColor(MyStyle.getDataTable()));
                 }
-                displayLine(lineSize, GetColor(CulcClass.getTable()), GetColor(CulcClass.getTable()), CulcClass.getShepSlash());
+                displayLine(lineSize, GetColor(MyStyle.getTable()), GetColor(MyStyle.getTable()), MyStyle.getShepSlash());
             }
         }
         static void InitMyClass()
@@ -368,7 +381,7 @@ namespace tutorial_console
         {
             PrintColorLine(title, color1);
             for (int x = -1; x < count; x++)
-                PrintColor(CulcClass.getShepDash(), color2);
+                PrintColor(MyStyle.getShepDash(), color2);
             Console.WriteLine();
         }
         static ConsoleColor GetColor(string mcolor)

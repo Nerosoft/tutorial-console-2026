@@ -1,6 +1,7 @@
 ﻿{
   "admin": {
     "language": "english",
+    "style": "mystyle",
     "culc": {
       "1": [
         "1",
@@ -29,22 +30,24 @@
         "3"
       ]
     },
+    "mystyle": {
+      "DataTable": "darkgreen",
+      "TitleTable": "darkyellow",
+      "Table": "blue",
+      "Confirem": "yellow",
+      "Value": "green",
+      "Operator": "magenta",
+      "Nav": "cyan",
+      "Message": "darkred",
+      "ShepSlash": "|",
+      "ShepDash": "-"
+    },
     "english": {
       "Search": {
-        "DataTable": "darkgreen",
-        "TitleTable": "darkyellow",
-        "Table": "blue",
-        "Confirem": "yellow",
-        "Value": "green",
-        "Operator": "magenta",
-        "Nav": "cyan",
-        "Message": "darkred",
         "Colume": "column",
         "Total": "Total",
         "Empty": "empty",
         "Id": "ID",
-        "ShepSlash": "|",
-        "ShepDash": "-",
         "option": "number",
         "state": "search",
         "HelpMessage": "Help message:- welcome in search screen",
@@ -70,20 +73,10 @@
         ]
       },
       "Add": {
-        "DataTable": "darkgreen",
-        "TitleTable": "darkyellow",
-        "Table": "blue",
-        "Confirem": "yellow",
-        "Value": "green",
-        "Operator": "magenta",
-        "Nav": "cyan",
-        "Message": "darkred",
         "Colume": "column",
         "Total": "Total",
         "Empty": "empty",
         "Id": "ID",
-        "ShepSlash": "|",
-        "ShepDash": "-",
         "option": "number",
         "state": "add",
         "HelpMessage": "Help message:- welcome in add screen",
@@ -104,20 +97,10 @@
         ]
       },
       "Edit": {
-        "DataTable": "darkgreen",
-        "TitleTable": "darkyellow",
-        "Table": "blue",
-        "Confirem": "yellow",
-        "Value": "green",
-        "Operator": "magenta",
-        "Nav": "cyan",
-        "Message": "darkred",
         "Colume": "column",
         "Total": "Total",
         "Empty": "empty",
         "Id": "ID",
-        "ShepSlash": "|",
-        "ShepDash": "-",
         "option": "operation",
         "state": "edit",
         "HelpMessage": "Help message:- welcome in edit screen",
