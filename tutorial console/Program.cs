@@ -9,6 +9,7 @@ using System.Text.Json.Nodes;
 
 namespace tutorial_console
 {
+    //make message not found data for search table
     internal class MyClass
     {
         public string Colume { get; set; }
@@ -132,8 +133,6 @@ namespace tutorial_console
             resetCulc();
             return ClearMessage;
         }
-       
-
         public List<string> getAddsearch()
         {
             return AddSearchculc;
@@ -146,13 +145,14 @@ namespace tutorial_console
         {
             option = myOption;
         }
-        public void resetCulc()
+        public bool resetCulc()
         {
             option = "number";
             string id = state == "edit"?AddSearchculc.First():NullTotal;
             AddSearchculc.Clear(); 
             AddSearchculc.Add(id);
             AddSearchculc.Add(NullTotal);
+            return true;
         }
         public List<string> setCulc(List<string> culc)
         {
@@ -166,6 +166,22 @@ namespace tutorial_console
         public string getState()
         {
             return this.state;
+        }
+
+        public string getFirst()
+        {
+            setOption("operation");
+            return AddSearchculc.First();
+        }
+        public string makeId()
+        {
+            return Guid.NewGuid().ToString("N").Substring(0, 3);
+        }
+        public List<string> getAddsearch2()
+        {
+            var temp = AddSearchculc.ToList();
+            resetCulc();
+            return temp;
         }
     }
     class Style
@@ -268,22 +284,25 @@ namespace tutorial_console
                 //show table culc
                 else if (CulcClass.getState() == "search" && number.Contains("<") || CulcClass.getState() == "search" && number.Contains(">") || number == "lee")
                     showTable(number == "lee" ? getCulc() : (getCulc().FindAll(x => number.Contains("<") && int.TryParse(number.Substring(1), out int val) && int.TryParse(x.Last(), out int val2) && val2 < int.Parse(number.Substring(1)) || number.Contains(">") && int.TryParse(number.Substring(1), out int val3) && int.TryParse(x.Last(), out int val4) && val4 > int.Parse(number.Substring(1))).ToList()), number == "lee" ? SearchCulc.getTitleResultCulc() : (number.Contains("<") ? CulcClass.getMinimizeMessage() : CulcClass.getMaximizeMessage()));
-                // make search item
+
                 else if (CulcClass.getOption() == "confirem" && CulcClass.getState() == "search" && number == "e")
                 {
-                    EditCulc = json[DbName][language]["Edit"].Deserialize<MyClass>();
-                    EditCulc.setCulc(CulcClass.getAddsearch().ToList());
-                    PrintMessage();
-                    CulcClass = EditCulc;
+                    PrintColorLine(CulcClass.getSuccessfullyMessage(), GetColor(MyStyle.getMessage()));
+                    CulcClass = json[DbName][language]["Edit"].Deserialize<MyClass>();
+                    CulcClass.setCulc(SearchCulc.getAddsearch2());
                 }
-                //make edit or add item
-                else if (CulcClass.getOption() == "confirem" && number == "d" && EditCulc != null && EditCulc.getAddsearch().First() == CulcClass.getAddsearch().First() && json[DbName]["culc"].AsObject().Remove(CulcClass.getAddsearch().First()) && (EditCulc = null) == null||CulcClass.getOption() == "confirem" && number == "d" && json[DbName]["culc"].AsObject().Remove(CulcClass.getAddsearch().First()) || CulcClass.getOption() == "confirem" && number == "y" && (json[DbName]["culc"].AsObject()[CulcClass.getState()=="add"? Guid.NewGuid().ToString("N").Substring(0, 3) : CulcClass.getAddsearch().First()] = JsonSerializer.SerializeToNode(CulcClass.getAddsearch().Skip(1))) != null)
+                else if (CulcClass.getOption() == "confirem" && number == "d" && EditCulc != null && EditCulc.getAddsearch().First() == CulcClass.getAddsearch().First() && json[DbName]["culc"].AsObject().Remove(CulcClass.getAddsearch2().First()) && (EditCulc = null) == null ||
+                    CulcClass.getOption() == "confirem" && number == "d" && json[DbName]["culc"].AsObject().Remove(CulcClass.getAddsearch2().First()) ||
+                    CulcClass.getOption() == "confirem" && number == "y" && CulcClass.getState() == "add" && (json[DbName]["culc"].AsObject()[CulcClass.makeId()] = JsonSerializer.SerializeToNode(CulcClass.getAddsearch2().Skip(1))) != null ||
+                    CulcClass.getOption() == "confirem" && number == "y" && CulcClass.getState() == "edit" && (json[DbName]["culc"].AsObject()[CulcClass.getFirst()] = JsonSerializer.SerializeToNode(CulcClass.getAddsearch().Skip(1))) != null && CulcClass.getAddsearch().First() == SearchCulc.getAddsearch().First() && SearchCulc.resetCulc() ||
+                    CulcClass.getOption() == "confirem" && number == "y" && CulcClass.getState() == "edit" && (json[DbName]["culc"].AsObject()[CulcClass.getFirst()] = JsonSerializer.SerializeToNode(CulcClass.getAddsearch().Skip(1))) != null)
+
                 {
-                    File.WriteAllText("data.json", json.ToJsonString(new JsonSerializerOptions{WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping}));
+                    PrintColorLine(number == "d" ? CulcClass.getDeleteMessage() : CulcClass.getSuccessfullyMessage(), GetColor(MyStyle.getMessage()));
+                    File.WriteAllText("data.json", json.ToJsonString(new JsonSerializerOptions { WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
                     json = JsonNode.Parse(File.ReadAllText("data.json"));
                     setMyCulc(json[DbName]["culc"].AsObject().Select(x => x.Value.Deserialize<List<string>>().Prepend(x.Key).ToList()).ToList());
                     showTable(getCulc(), SearchCulc.getTitleResultCulc());
-                    PrintMessage();
                 }
                 else if(CulcClass.getOption() == "confirem" && number != "y")
                 {
@@ -322,18 +341,6 @@ namespace tutorial_console
             Console.ForegroundColor = color;
             Console.WriteLine(message);
             Console.ResetColor();
-        }
-        static void PrintMessage()
-        {
-            if (CulcClass.getState() == "edit")
-            {
-                CulcClass.setOption("operation");
-                if (CulcClass.getAddsearch().First() == SearchCulc.getAddsearch().First())
-                    SearchCulc.resetCulc();
-            }
-            else
-                CulcClass.resetCulc();
-            PrintColorLine(number == "d" ? CulcClass.getDeleteMessage() : CulcClass.getSuccessfullyMessage(), GetColor(MyStyle.getMessage()));
         }
         static void showTable<T>(T culc2, string title)
         {
