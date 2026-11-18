@@ -26,6 +26,12 @@
         "+",
         "1",
         "203"
+      ],
+      "450": [
+        "1",
+        "+",
+        "1",
+        "2"
       ]
     },
     "mystyle": {
@@ -42,6 +48,7 @@
     },
     "english": {
       "Search": {
+        "SearchTableMessage": "Not fount any item inside table",
         "Colume": "column",
         "Total": "Total",
         "Empty": "empty",
@@ -71,6 +78,7 @@
         ]
       },
       "Add": {
+        "SearchTableMessage": "Not fount any item inside table",
         "Colume": "column",
         "Total": "Total",
         "Empty": "empty",
@@ -95,6 +103,7 @@
         ]
       },
       "Edit": {
+        "SearchTableMessage": "Not fount any item inside table",
         "Colume": "column",
         "Total": "Total",
         "Empty": "empty",
