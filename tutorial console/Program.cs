@@ -12,6 +12,7 @@ namespace tutorial_console
     //make message not found data for search table
     internal class MyClass
     {
+        public string SearchTableMessage { get; set; }
         public string Colume { get; set; }
         public string Total { get; set; }
         public string Empty { get; set; }
@@ -49,6 +50,10 @@ namespace tutorial_console
         }
         public string getId(){
             return Id;
+        }
+        public string getSearchTableMessage()
+        {
+            return SearchTableMessage;
         }
         public string getNullTotal()
         {
@@ -270,9 +275,10 @@ namespace tutorial_console
                 }
                 //make search by total use max min function
                 //show table culc
-                else if (CulcClass.getState() == "search" && number.Contains("<") || CulcClass.getState() == "search" && number.Contains(">") || number == "lee")
+                else if (CulcClass.getState() == "search" && number.Contains("<") && myculc.Any(x => number.Contains("<") && int.TryParse(number.Substring(1), out int val) && int.TryParse(x.Last(), out int val2) && val2 < int.Parse(number.Substring(1))) || CulcClass.getState() == "search" && number.Contains(">") && myculc.Any(x => number.Contains(">") && int.TryParse(number.Substring(1), out int val3) && int.TryParse(x.Last(), out int val4) && val4 > int.Parse(number.Substring(1))) || number == "lee")
                     showTable(number == "lee" ? myculc : (myculc.FindAll(x => number.Contains("<") && int.TryParse(number.Substring(1), out int val) && int.TryParse(x.Last(), out int val2) && val2 < int.Parse(number.Substring(1)) || number.Contains(">") && int.TryParse(number.Substring(1), out int val3) && int.TryParse(x.Last(), out int val4) && val4 > int.Parse(number.Substring(1))).ToList()), number == "lee" ? SearchCulc.getTitleResultCulc() : (number.Contains("<") ? CulcClass.getMinimizeMessage() : CulcClass.getMaximizeMessage()));
-
+                else if(CulcClass.getState() == "search" && number.Contains("<") || CulcClass.getState() == "search" && number.Contains(">"))
+                    PrintColorLine(CulcClass.getSearchTableMessage(), GetColor(MyStyle.getMessage()));
                 else if (CulcClass.getOption() == "confirem" && CulcClass.getState() == "search" && number == "e")
                 {
                     PrintColorLine(CulcClass.getSuccessfullyMessage(), GetColor(MyStyle.getMessage()));
@@ -314,6 +320,8 @@ namespace tutorial_console
                     catch { }
                     if(CulcClass.getState() == "search" && myculc.FindAll(x => CulcClass.getAddsearch().Count <= x.Count && x.GetRange(1, CulcClass.getAddsearch().Count - 2).SequenceEqual(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2))).Any())
                         showTable(myculc.FindAll(x => CulcClass.getAddsearch().Count <= x.Count && x.GetRange(1, CulcClass.getAddsearch().Count - 2).SequenceEqual(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2))), CulcClass.getFoundCulcMessage());
+                    else
+                        PrintColorLine(CulcClass.getSearchTableMessage(), GetColor(MyStyle.getMessage()));
                 }
                 InitMyClass();
             }
