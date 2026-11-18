@@ -294,7 +294,7 @@ namespace tutorial_console
                 else if (CulcClass.getOption() == "confirem" && number == "d" && EditCulc != null && EditCulc.getAddsearch().First() == CulcClass.getAddsearch().First() && json[DbName]["culc"].AsObject().Remove(CulcClass.getAddsearch2().First()) && (EditCulc = null) == null ||
                     CulcClass.getOption() == "confirem" && number == "d" && json[DbName]["culc"].AsObject().Remove(CulcClass.getAddsearch2().First()) ||
                     CulcClass.getOption() == "confirem" && number == "y" && CulcClass.getState() == "add" && (json[DbName]["culc"].AsObject()[CulcClass.makeId()] = JsonSerializer.SerializeToNode(CulcClass.getAddsearch2().Skip(1))) != null ||
-                    CulcClass.getOption() == "confirem" && number == "y" && CulcClass.getState() == "edit" && (json[DbName]["culc"].AsObject()[CulcClass.getFirst()] = JsonSerializer.SerializeToNode(CulcClass.getAddsearch().Skip(1))) != null && CulcClass.getAddsearch().First() == SearchCulc.getAddsearch().First() && SearchCulc.resetCulc() ||
+                    CulcClass.getOption() == "confirem" && number == "y" && CulcClass.getState() == "edit" && CulcClass.getAddsearch().First() == SearchCulc.getAddsearch().First() && SearchCulc.resetCulc() && (json[DbName]["culc"].AsObject()[CulcClass.getFirst()] = JsonSerializer.SerializeToNode(CulcClass.getAddsearch().Skip(1))) != null ||
                     CulcClass.getOption() == "confirem" && number == "y" && CulcClass.getState() == "edit" && (json[DbName]["culc"].AsObject()[CulcClass.getFirst()] = JsonSerializer.SerializeToNode(CulcClass.getAddsearch().Skip(1))) != null)
 
                 {
