@@ -248,7 +248,7 @@ namespace tutorial_console
 
         static void Main(string[] args)
         {
-            JsonNode json = JsonNode.Parse(File.ReadAllText("database_json.json"));
+            JsonNode json = JsonNode.Parse(File.ReadAllText("data.json"));
             string number = default;
             string DbName = "admin";
             string language = json[DbName]["language"].GetValue<string>();
