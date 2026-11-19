@@ -12,6 +12,9 @@ namespace tutorial_console
     //make message not found data for search table
     internal class MyClass
     {
+        public string ConfiremExit  { get; set; }
+        public string SuccessfyllyCancel { get; set; }
+        public string CancelExit { get; set; }
         public string SearchTableMessage { get; set; }
         public string Colume { get; set; }
         public string Total { get; set; }
@@ -39,6 +42,18 @@ namespace tutorial_console
         public string NullTotal { get; set; }
         public List<string> AddSearchculc { get; set; }
 
+        public string getConfiremExit ()
+        { 
+            return ConfiremExit;
+        }
+        public string getSuccessfyllyCancel()
+        {
+            return SuccessfyllyCancel;
+        }
+        public string getCancelExit()
+        {
+            return CancelExit;
+        }
         public string getColume() {
             return Colume;
         }
@@ -268,7 +283,15 @@ namespace tutorial_console
                 showTable(CulcClass.getOption() == "confirem" && CulcClass.getState() == "search" && number.Contains("&") ?  CulcClass.setCulc(myculc.Find(x => x.First() == number.Substring(1)).ToList()):CulcClass.getAddsearch(), CulcClass.getOption() == "confirem"? CulcClass.getConfiremMessage() : CulcClass.getTableTitlt());
                 PrintColor(CulcClass.getOption() == "confirem" ? CulcClass.getAgreeConfiremMessage() :(CulcClass.getOption() == "operation" ? CulcClass.getOperatorMessage() : CulcClass.getNumberMessage()), CulcClass.getOption() == "confirem" ?GetColor(MyStyle.getConfirem()) : (CulcClass.getOption() == "operation" ? GetColor(MyStyle.getValue()) : GetColor(MyStyle.getOperator())));
                 number = Console.ReadLine();
-                if (number == "add" || number == "search" || number == "edit" && EditCulc != null)
+                if (number == "exit")
+                {
+                    PrintColor(CulcClass.getConfiremExit(), GetColor(MyStyle.getConfirem()));
+                    number = Console.ReadLine();
+                    PrintColorLine(number == "Y"?CulcClass.getSuccessfyllyCancel (): CulcClass.getCancelExit(), GetColor(MyStyle.getMessage()));
+                    if (number == "y")
+                        break;
+                }
+                else if (number == "add" || number == "search" || number == "edit" && EditCulc != null)
                 {
                     CulcClass = number == "search" ? SearchCulc : (number == "edit" ? EditCulc : (AddCulc ?? json[DbName][language]["Add"].Deserialize<MyClass>()));
                     PrintColorLine(CulcClass.getNavMessage(), GetColor(MyStyle.getNav()));

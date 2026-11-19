@@ -48,6 +48,9 @@
     },
     "english": {
       "Search": {
+        "ConfiremExit": "Do you want exit app y/n ? ",
+        "SuccessfyllyCancel": "Successfully exit app",
+        "CancelExit": "Cancel exit app",
         "SearchTableMessage": "Not fount any item inside table",
         "Colume": "column",
         "Total": "Total",
@@ -78,6 +81,9 @@
         ]
       },
       "Add": {
+        "ConfiremExit": "Do you want exit app y/n ? ",
+        "SuccessfyllyCancel": "Successfully exit app",
+        "CancelExit": "Cancel exit app",
         "SearchTableMessage": "Not fount any item inside table",
         "Colume": "column",
         "Total": "Total",
@@ -103,6 +109,9 @@
         ]
       },
       "Edit": {
+        "ConfiremExit": "Do you want exit app y/n ? ",
+        "SuccessfyllyCancel": "Successfully exit app",
+        "CancelExit": "Cancel exit app",
         "SearchTableMessage": "Not fount any item inside table",
         "Colume": "column",
         "Total": "Total",
