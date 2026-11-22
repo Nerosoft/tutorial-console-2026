@@ -9,7 +9,7 @@ using System.Text.Json.Nodes;
 
 namespace tutorial_console
 {
-    //make message not found data for search table
+    //make ToLower().StartsWith("y")
     internal class MyClass
     {
         public string ConfiremExit  { get; set; }
@@ -278,18 +278,14 @@ namespace tutorial_console
             MyStyle = json[DbName][style].Deserialize<Style>();
             CulcClass = SearchCulc;
             showTable(myculc, CulcClass.getTitleResultCulc());
-            while (true)
+            while (number != "exit" || number == "exit" && !Console.ReadLine().ToLower().StartsWith("y") && PrintColorLine(CulcClass.getCancelExit(), GetColor(MyStyle.getMessage())))
             {
                 showTable(CulcClass.getOption() == "confirem" && CulcClass.getState() == "search" && number.Contains("&") ?  CulcClass.setCulc(myculc.Find(x => x.First() == number.Substring(1)).ToList()):CulcClass.getAddsearch(), CulcClass.getOption() == "confirem"? CulcClass.getConfiremMessage() : CulcClass.getTableTitlt());
                 PrintColor(CulcClass.getOption() == "confirem" ? CulcClass.getAgreeConfiremMessage() :(CulcClass.getOption() == "operation" ? CulcClass.getOperatorMessage() : CulcClass.getNumberMessage()), CulcClass.getOption() == "confirem" ?GetColor(MyStyle.getConfirem()) : (CulcClass.getOption() == "operation" ? GetColor(MyStyle.getValue()) : GetColor(MyStyle.getOperator())));
                 number = Console.ReadLine();
-                if (number == "exit")
-                {
+                if (number == "exit") {
                     PrintColor(CulcClass.getConfiremExit(), GetColor(MyStyle.getConfirem()));
-                    number = Console.ReadLine();
-                    PrintColorLine(number == "Y"?CulcClass.getSuccessfyllyCancel (): CulcClass.getCancelExit(), GetColor(MyStyle.getMessage()));
-                    if (number == "y")
-                        break;
+                    continue;
                 }
                 else if (number == "add" || number == "search" || number == "edit" && EditCulc != null)
                 {
@@ -298,9 +294,9 @@ namespace tutorial_console
                 }
                 //make search by total use max min function
                 //show table culc
-                else if (number == "lee" || CulcClass.getState() == "search" && myculc.Any(x => number.Contains("<") && int.TryParse(number.Substring(1), out int val) && int.TryParse(x.Last(), out int val2) && val2 < int.Parse(number.Substring(1)) || number.Contains(">") && int.TryParse(number.Substring(1), out int val3) && int.TryParse(x.Last(), out int val4) && val4 > int.Parse(number.Substring(1))))
+                else if (number == "lee" || CulcClass.getState() == "search" && myculc.Exists(x => number.Contains("<") && int.TryParse(number.Substring(1), out int val) && int.TryParse(x.Last(), out int val2) && val2 < int.Parse(number.Substring(1)) || number.Contains(">") && int.TryParse(number.Substring(1), out int val3) && int.TryParse(x.Last(), out int val4) && val4 > int.Parse(number.Substring(1))))
                     showTable(number == "lee" ? myculc : (myculc.FindAll(x => number.Contains("<") && int.TryParse(number.Substring(1), out int val) && int.TryParse(x.Last(), out int val2) && val2 < int.Parse(number.Substring(1)) || number.Contains(">") && int.TryParse(number.Substring(1), out int val3) && int.TryParse(x.Last(), out int val4) && val4 > int.Parse(number.Substring(1))).ToList()), number == "lee" ? SearchCulc.getTitleResultCulc() : (number.Contains("<") ? CulcClass.getMinimizeMessage() : CulcClass.getMaximizeMessage()));
-                else if(CulcClass.getState() == "search" && number.Contains("<") || CulcClass.getState() == "search" && number.Contains(">"))
+                else if (CulcClass.getState() == "search" && number.Contains("<") || CulcClass.getState() == "search" && number.Contains(">"))
                     PrintColorLine(CulcClass.getSearchTableMessage(), GetColor(MyStyle.getMessage()));
                 else if (CulcClass.getOption() == "confirem" && CulcClass.getState() == "search" && number == "e")
                 {
@@ -321,7 +317,7 @@ namespace tutorial_console
                     myculc = json[DbName]["culc"].AsObject().Select(x => x.Value.Deserialize<List<string>>().Prepend(x.Key).ToList()).ToList();
                     showTable(myculc, SearchCulc.getTitleResultCulc());
                 }
-                else if(CulcClass.getOption() == "confirem" && number != "y")
+                else if (CulcClass.getOption() == "confirem" && number != "y")
                 {
                     CulcClass.setOption("operation");
                     PrintColorLine(CulcClass.getCancelMessage(), GetColor(MyStyle.getMessage()));
@@ -330,7 +326,7 @@ namespace tutorial_console
                 //make help and edit and test change value and edit == null
                 else if (number == "clear" || number == "help" || number == "edit" && EditCulc == null || CulcClass.getState() == "edit" && CulcClass.getOption() == "operation" && number == "=" && myculc.Exists(x => x.SequenceEqual(CulcClass.getAddsearch())))
                     PrintColorLine(number == "clear" ? CulcClass.getClearMessage() : (number == "help" ? CulcClass.getMessageHelp() : (number == "edit" ? CulcClass.getNullMessage() : CulcClass.getValueChangeMessage())), GetColor(MyStyle.getMessage()));
-                else if (CulcClass.getState() == "search" && number.Contains("&") && myculc.Exists(x => x.First() == number.Substring(1)) ||CulcClass.getState() != "search" && CulcClass.getOption() == "operation" && number == "=" && CulcClass.getAddsearch().Count >= 5)
+                else if (CulcClass.getState() == "search" && number.Contains("&") && myculc.Exists(x => x.First() == number.Substring(1)) || CulcClass.getState() != "search" && CulcClass.getOption() == "operation" && number == "=" && CulcClass.getAddsearch().Count >= 5)
                     CulcClass.setOption("confirem");
                 else
                 {
@@ -338,16 +334,17 @@ namespace tutorial_console
                     CulcClass.getAddsearch().Insert(CulcClass.getAddsearch().Count - 1, number);
                     try
                     {
-                        CulcClass.getAddsearch()[CulcClass.getAddsearch().Count - 1] = CulcClass.getState() == "search" ||CulcClass.getAddsearch().Count == 3 ||CulcClass.getOption() == "number" ? CulcClass.getNullTotal() : new DataTable().Compute(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2).Aggregate((a, b) => a + b), null).ToString();
+                        CulcClass.getAddsearch()[CulcClass.getAddsearch().Count - 1] = CulcClass.getState() == "search" || CulcClass.getAddsearch().Count == 3 || CulcClass.getOption() == "number" ? CulcClass.getNullTotal() : new DataTable().Compute(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2).Aggregate((a, b) => a + b), null).ToString();
                     }
                     catch { }
-                    if(CulcClass.getState() == "search" && myculc.Any(x => CulcClass.getAddsearch().Count <= x.Count && x.GetRange(1, CulcClass.getAddsearch().Count - 2).SequenceEqual(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2))))
+                    if (CulcClass.getState() == "search" && myculc.Exists(x => CulcClass.getAddsearch().Count <= x.Count && x.GetRange(1, CulcClass.getAddsearch().Count - 2).SequenceEqual(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2))))
                         showTable(myculc.FindAll(x => CulcClass.getAddsearch().Count <= x.Count && x.GetRange(1, CulcClass.getAddsearch().Count - 2).SequenceEqual(CulcClass.getAddsearch().GetRange(1, CulcClass.getAddsearch().Count - 2))), CulcClass.getFoundCulcMessage());
-                    else if(CulcClass.getState() == "search")
+                    else if (CulcClass.getState() == "search")
                         PrintColorLine(CulcClass.getSearchTableMessage(), GetColor(MyStyle.getMessage()));
                 }
                 InitMyClass();
             }
+            PrintColorLine(CulcClass.getSuccessfyllyCancel(), GetColor(MyStyle.getMessage()));
         }
         static void PrintColor(string message, ConsoleColor color)
         {
@@ -355,11 +352,12 @@ namespace tutorial_console
             Console.Write(message);
             Console.ResetColor();
         }
-        static void PrintColorLine(string message, ConsoleColor color)
+        static bool PrintColorLine(string message, ConsoleColor color)
         {
             Console.ForegroundColor = color;
             Console.WriteLine(message);
             Console.ResetColor();
+            return true;
         }
         static void showTable<T>(T culc2, string title)
         {
