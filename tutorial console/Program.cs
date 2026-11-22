@@ -274,19 +274,17 @@ namespace tutorial_console
             string language = json[DbName]["language"].GetValue<string>();
             string style = json[DbName]["style"].GetValue<string>();
             List<List<string>> myculc = json[DbName]["culc"].AsObject().Select(x => x.Value.Deserialize<List<string>>().Prepend(x.Key).ToList()).ToList();
-            SearchCulc = json[DbName][language]["Search"].Deserialize<MyClass>();
+            CulcClass = json[DbName][language]["Search"].Deserialize<MyClass>();
             MyStyle = json[DbName][style].Deserialize<Style>();
-            CulcClass = SearchCulc;
             showTable(myculc, CulcClass.getTitleResultCulc());
-            while (number != "exit" || number == "exit" && !Console.ReadLine().ToLower().StartsWith("y") && PrintColorLine(CulcClass.getCancelExit(), GetColor(MyStyle.getMessage())))
+            do
             {
-                showTable(CulcClass.getOption() == "confirem" && CulcClass.getState() == "search" && number.Contains("&") ?  CulcClass.setCulc(myculc.Find(x => x.First() == number.Substring(1)).ToList()):CulcClass.getAddsearch(), CulcClass.getOption() == "confirem"? CulcClass.getConfiremMessage() : CulcClass.getTableTitlt());
-                PrintColor(CulcClass.getOption() == "confirem" ? CulcClass.getAgreeConfiremMessage() :(CulcClass.getOption() == "operation" ? CulcClass.getOperatorMessage() : CulcClass.getNumberMessage()), CulcClass.getOption() == "confirem" ?GetColor(MyStyle.getConfirem()) : (CulcClass.getOption() == "operation" ? GetColor(MyStyle.getValue()) : GetColor(MyStyle.getOperator())));
+                InitMyClass();
+                showTable(CulcClass.getOption() == "confirem" && CulcClass.getState() == "search" && number.Contains("&") ? CulcClass.setCulc(myculc.Find(x => x.First() == number.Substring(1)).ToList()) : CulcClass.getAddsearch(), CulcClass.getOption() == "confirem" ? CulcClass.getConfiremMessage() : CulcClass.getTableTitlt());
+                PrintColor(CulcClass.getOption() == "confirem" ? CulcClass.getAgreeConfiremMessage() : (CulcClass.getOption() == "operation" ? CulcClass.getOperatorMessage() : CulcClass.getNumberMessage()), CulcClass.getOption() == "confirem" ? GetColor(MyStyle.getConfirem()) : (CulcClass.getOption() == "operation" ? GetColor(MyStyle.getValue()) : GetColor(MyStyle.getOperator())));
                 number = Console.ReadLine();
-                if (number == "exit") {
+                if (number == "exit")
                     PrintColor(CulcClass.getConfiremExit(), GetColor(MyStyle.getConfirem()));
-                    continue;
-                }
                 else if (number == "add" || number == "search" || number == "edit" && EditCulc != null)
                 {
                     CulcClass = number == "search" ? SearchCulc : (number == "edit" ? EditCulc : (AddCulc ?? json[DbName][language]["Add"].Deserialize<MyClass>()));
@@ -342,8 +340,8 @@ namespace tutorial_console
                     else if (CulcClass.getState() == "search")
                         PrintColorLine(CulcClass.getSearchTableMessage(), GetColor(MyStyle.getMessage()));
                 }
-                InitMyClass();
-            }
+            } while (number != "exit" || number == "exit" && !Console.ReadLine().ToLower().StartsWith("y") && PrintColorLine(CulcClass.getCancelExit(), GetColor(MyStyle.getMessage())));
+
             PrintColorLine(CulcClass.getSuccessfyllyCancel(), GetColor(MyStyle.getMessage()));
         }
         static void PrintColor(string message, ConsoleColor color)
