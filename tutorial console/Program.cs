@@ -219,9 +219,13 @@ namespace tutorial_console
         }
         public static MyClass initEdit(JsonNode json, List<string> list)
         {
-            var instance = json["Edit"].Deserialize<MyClass>();
+            var instance = json["edit"].Deserialize<MyClass>();
             instance.setCulc(list);
             return instance;
+        }
+        public static MyClass initCulcClass(JsonNode json)
+        {
+            return json.Deserialize<MyClass>();
         }
     }
     class Style
@@ -309,17 +313,16 @@ namespace tutorial_console
         static MyClass EditCulc;
         static MyClass CulcClass;
         static Style MyStyle;
-        static string number = default;
 
         static void Main(string[] args)
         {
+            string number = "search";
             JsonNode json = JsonNode.Parse(File.ReadAllText("data.json"));
             string DbName = "admin";
             string language = json[DbName]["language"].GetValue<string>();
             string style = json[DbName]["style"].GetValue<string>();
             List<List<string>> myculc = json[DbName]["culc"].AsObject().Select(x => x.Value.Deserialize<List<string>>().Prepend(x.Key).ToList()).ToList();
-            SearchCulc = json[DbName][language]["Search"].Deserialize<MyClass>();
-            CulcClass = SearchCulc;
+            CulcClass = MyClass.initCulcClass(json[DbName][language][number]);
             MyStyle = json[DbName][style].Deserialize<Style>();
             showTable(myculc, CulcClass.getTitleResultCulc());
             do
@@ -339,14 +342,14 @@ namespace tutorial_console
                         EditCulc = CulcClass;
                     else
                         SearchCulc = CulcClass;
-                    CulcClass = number == "search" ? SearchCulc : number == "add" ? (AddCulc ?? json[DbName][language]["Add"].Deserialize<MyClass>()) :
+                    CulcClass = number == "search" ? SearchCulc : number == "add" ? (AddCulc ?? MyClass.initCulcClass(json[DbName][language][number])) :
                     number == "edit" ? EditCulc : MyClass.initEdit(json[DbName][language], SearchCulc.getAddsearch2());
                     PrintColorLine(number == "e" ?SearchCulc.getSuccessfullyMessage() : CulcClass.getNavMessage(), number == "e" ? MyStyle.getMessage() : MyStyle.getNav());
                 }
                 //make search by total use max min function
                 //show table culc
                 else if (number == "lee" || CulcClass.getState() == "search" && myculc.Exists(x => number.StartsWith("<") && int.TryParse(number.Substring(1), out int val) && int.TryParse(x.Last(), out int val2) && val2 < int.Parse(number.Substring(1)) || number.StartsWith(">") && int.TryParse(number.Substring(1), out int val3) && int.TryParse(x.Last(), out int val4) && val4 > int.Parse(number.Substring(1))))
-                    showTable(number == "lee" ? myculc : (myculc.FindAll(x => number.StartsWith("<") && int.TryParse(number.Substring(1), out int val) && int.TryParse(x.Last(), out int val2) && val2 < int.Parse(number.Substring(1)) || number.StartsWith(">") && int.TryParse(number.Substring(1), out int val3) && int.TryParse(x.Last(), out int val4) && val4 > int.Parse(number.Substring(1))).ToList()), number == "lee" ? SearchCulc.getTitleResultCulc() : (number.StartsWith("<") ? CulcClass.getMinimizeMessage() : CulcClass.getMaximizeMessage()));
+                    showTable(number == "lee" ? myculc : (myculc.FindAll(x => number.StartsWith("<") && int.TryParse(number.Substring(1), out int val) && int.TryParse(x.Last(), out int val2) && val2 < int.Parse(number.Substring(1)) || number.StartsWith(">") && int.TryParse(number.Substring(1), out int val3) && int.TryParse(x.Last(), out int val4) && val4 > int.Parse(number.Substring(1))).ToList()), number == "lee" ? CulcClass.getTitleResultCulc() : (number.StartsWith("<") ? CulcClass.getMinimizeMessage() : CulcClass.getMaximizeMessage()));
                 else if (CulcClass.getState() == "search" && number.StartsWith("<") || CulcClass.getState() == "search" && number.StartsWith(">"))
                     PrintColorLine(CulcClass.getSearchTableMessage(), MyStyle.getMessage());
                 else if (CulcClass.getOption() == "confirem" && number == "d" && EditCulc != null && EditCulc.getAddsearch().First() == CulcClass.getAddsearch().First() && json[DbName]["culc"].AsObject().Remove(CulcClass.getAddsearch2().First()) && (EditCulc = null) == null ||
@@ -360,7 +363,7 @@ namespace tutorial_console
                     File.WriteAllText("data.json", json.ToJsonString(new JsonSerializerOptions { WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
                     json = JsonNode.Parse(File.ReadAllText("data.json"));
                     myculc = json[DbName]["culc"].AsObject().Select(x => x.Value.Deserialize<List<string>>().Prepend(x.Key).ToList()).ToList();
-                    showTable(myculc, SearchCulc.getTitleResultCulc());
+                    showTable(myculc, CulcClass.getTitleResultCulc());
                 }
                 else if (CulcClass.getOption() == "confirem" && number != "y")
                 {

@@ -41,7 +41,7 @@
       "ShepDash": "-"
     },
     "english": {
-      "Search": {
+      "search": {
         "ActiveWindo": "Search is active",
         "ConfiremExit": "Do you want exit app y/n ? ",
         "SuccessfyllyCancel": "Successfully exit app",
@@ -75,7 +75,8 @@
           "??"
         ]
       },
-      "Add": {
+      "add": {
+        "TitleResultCulc": "Table all result culc",
         "ActiveWindo": "Add is active",
         "ConfiremExit": "Do you want exit app y/n ? ",
         "SuccessfyllyCancel": "Successfully exit app",
@@ -104,7 +105,8 @@
           "??"
         ]
       },
-      "Edit": {
+      "edit": {
+        "TitleResultCulc": "Table all result culc",
         "ActiveWindo": "Edit is active",
         "ConfiremExit": "Do you want exit app y/n ? ",
         "SuccessfyllyCancel": "Successfully exit app",
