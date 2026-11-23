@@ -26,12 +26,6 @@
         "+",
         "1",
         "203"
-      ],
-      "450": [
-        "1",
-        "+",
-        "1",
-        "2"
       ]
     },
     "mystyle": {
@@ -48,6 +42,7 @@
     },
     "english": {
       "Search": {
+        "ActiveWindo": "Search is active",
         "ConfiremExit": "Do you want exit app y/n ? ",
         "SuccessfyllyCancel": "Successfully exit app",
         "CancelExit": "Cancel exit app",
@@ -81,6 +76,7 @@
         ]
       },
       "Add": {
+        "ActiveWindo": "Add is active",
         "ConfiremExit": "Do you want exit app y/n ? ",
         "SuccessfyllyCancel": "Successfully exit app",
         "CancelExit": "Cancel exit app",
@@ -109,6 +105,7 @@
         ]
       },
       "Edit": {
+        "ActiveWindo": "Edit is active",
         "ConfiremExit": "Do you want exit app y/n ? ",
         "SuccessfyllyCancel": "Successfully exit app",
         "CancelExit": "Cancel exit app",
