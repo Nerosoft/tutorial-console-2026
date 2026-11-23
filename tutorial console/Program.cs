@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Xml.Linq;
 
 namespace tutorial_console
 {
@@ -216,6 +217,12 @@ namespace tutorial_console
         {
             return getOption() == "confirem" ? getConfiremMessage() : getTableTitlt();
         }
+        public static MyClass initEdit(JsonNode json, List<string> list)
+        {
+            var instance = json["Edit"].Deserialize<MyClass>();
+            instance.setCulc(list);
+            return instance;
+        }
     }
     class Style
     {
@@ -332,12 +339,9 @@ namespace tutorial_console
                         EditCulc = CulcClass;
                     else
                         SearchCulc = CulcClass;
-                        CulcClass = number == "search" ? SearchCulc : number == "add" ? (AddCulc ?? json[DbName][language]["Add"].Deserialize<MyClass>()) : 
-                        number == "edit" ? EditCulc: json[DbName][language]["Edit"].Deserialize<MyClass>();
-                    PrintColorLine(number == "e" && 
-                        CulcClass.setCulc(SearchCulc.getAddsearch2()) != null ?
-                        SearchCulc.getSuccessfullyMessage() :
-                        CulcClass.getNavMessage(), number == "e" ? MyStyle.getMessage() : MyStyle.getNav());
+                    CulcClass = number == "search" ? SearchCulc : number == "add" ? (AddCulc ?? json[DbName][language]["Add"].Deserialize<MyClass>()) :
+                    number == "edit" ? EditCulc : MyClass.initEdit(json[DbName][language], SearchCulc.getAddsearch2());
+                    PrintColorLine(number == "e" ?SearchCulc.getSuccessfullyMessage() : CulcClass.getNavMessage(), number == "e" ? MyStyle.getMessage() : MyStyle.getNav());
                 }
                 //make search by total use max min function
                 //show table culc
