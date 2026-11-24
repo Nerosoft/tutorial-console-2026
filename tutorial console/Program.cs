@@ -390,7 +390,7 @@ namespace tutorial_console
                     else if (CulcClass.getState() == "search")
                         PrintColorLine(CulcClass.getSearchTableMessage(), MyStyle.getMessage());
                 }
-            } while (number != "exit" || number == "exit" && !Console.ReadLine().ToLower().StartsWith("y") && PrintColorLine(CulcClass.getCancelExit(), MyStyle.getMessage()));
+            } while (number != "exit" || !Console.ReadLine().ToLower().StartsWith("y") && PrintColorLine(CulcClass.getCancelExit(), MyStyle.getMessage()));
 
             PrintColorLine(CulcClass.getSuccessfyllyCancel(), MyStyle.getMessage());
         }
