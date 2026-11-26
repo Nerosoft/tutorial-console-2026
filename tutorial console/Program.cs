@@ -313,16 +313,10 @@ namespace tutorial_console
         static MyClass EditCulc;
         static MyClass CulcClass;
         static Style MyStyle;
-        static string number = "search";
-
-        static bool showMessage(string mess = null)
-        {
-            PrintColor(mess??CulcClass.getLabel(), CulcClass.getOption() == "confirem" ? MyStyle.getConfirem() : (CulcClass.getOption() == "operation" ? MyStyle.getValue() : MyStyle.getOperator()));
-            return mess != null && Console.ReadLine().ToLower() != "y" || mess == null && (number = Console.ReadLine()) != "exit";
-        }
         static void Main(string[] args)
         {
             JsonNode json = JsonNode.Parse(File.ReadAllText("data.json"));
+            string number = "search";
             string DbName = "admin";
             string language = json[DbName]["language"].GetValue<string>();
             string style = json[DbName]["style"].GetValue<string>();
@@ -330,7 +324,7 @@ namespace tutorial_console
             CulcClass = MyClass.initCulcClass(json[DbName][language][number]);
             MyStyle = json[DbName][style].Deserialize<Style>();
             showTable(myculc, CulcClass.getTitleResultCulc());
-            while (showMessage() || showMessage(CulcClass.getConfiremExit()))
+            while (PrintColor(CulcClass.getLabel(), CulcClass.getOption() == "confirem" ? MyStyle.getConfirem() : (CulcClass.getOption() == "operation" ? MyStyle.getValue() : MyStyle.getOperator())) && (number = Console.ReadLine()) != "exit" || PrintColor(CulcClass.getConfiremExit(), MyStyle.getConfirem()) && Console.ReadLine().ToLower() != "y")
             {
                 if(number == "exit")
                     PrintColorLine(CulcClass.getCancelExit(), MyStyle.getMessage());
@@ -397,11 +391,12 @@ namespace tutorial_console
 
             PrintColorLine(CulcClass.getSuccessfyllyCancel(), MyStyle.getMessage());
         }
-        static void PrintColor(string message, ConsoleColor color)
+        static bool PrintColor(string message, ConsoleColor color)
         {
             Console.ForegroundColor = color;
             Console.Write(message);
             Console.ResetColor();
+            return true;
         }
         static void PrintColorLine(string message, ConsoleColor color)
         {
