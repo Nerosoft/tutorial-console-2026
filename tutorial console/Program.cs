@@ -327,7 +327,6 @@ namespace tutorial_console
             showTable(myculc, CulcClass.getTitleResultCulc());
             do
             {
-                showTable(CulcClass.getOption() == "confirem" && CulcClass.getState() == "search" && number.StartsWith("&") ? CulcClass.setCulc(myculc.Find(x => x.First() == number.Substring(1)).ToList()) : CulcClass.getAddsearch(), CulcClass.getTitleTable());
                 PrintColor(number=="exit"? $"{CulcClass.getCancelExit()}\n{CulcClass.getLabel()}" : CulcClass.getLabel(), CulcClass.getOption() == "confirem" ? MyStyle.getConfirem() : (CulcClass.getOption() == "operation" ? MyStyle.getValue() : MyStyle.getOperator()));
                 number = Console.ReadLine();
                 if (number == "exit")
@@ -390,6 +389,7 @@ namespace tutorial_console
                     else if (CulcClass.getState() == "search")
                         PrintColorLine(CulcClass.getSearchTableMessage(), MyStyle.getMessage());
                 }
+                showTable(CulcClass.getOption() == "confirem" && CulcClass.getState() == "search" && number.StartsWith("&") ? CulcClass.setCulc(myculc.Find(x => x.First() == number.Substring(1)).ToList()) : CulcClass.getAddsearch(), CulcClass.getTitleTable());
             } while (number != "exit" || !Console.ReadLine().ToLower().StartsWith("y"));
 
             PrintColorLine(CulcClass.getSuccessfyllyCancel(), MyStyle.getMessage());
