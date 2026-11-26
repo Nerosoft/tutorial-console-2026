@@ -313,10 +313,15 @@ namespace tutorial_console
         static MyClass EditCulc;
         static MyClass CulcClass;
         static Style MyStyle;
+        static string number = "search";
 
+        static bool showMessage(string mess = null)
+        {
+            PrintColor(mess??CulcClass.getLabel(), CulcClass.getOption() == "confirem" ? MyStyle.getConfirem() : (CulcClass.getOption() == "operation" ? MyStyle.getValue() : MyStyle.getOperator()));
+            return mess != null && Console.ReadLine().ToLower() != "y" || mess == null && (number = Console.ReadLine()) != "exit";
+        }
         static void Main(string[] args)
         {
-            string number = "search";
             JsonNode json = JsonNode.Parse(File.ReadAllText("data.json"));
             string DbName = "admin";
             string language = json[DbName]["language"].GetValue<string>();
@@ -325,13 +330,10 @@ namespace tutorial_console
             CulcClass = MyClass.initCulcClass(json[DbName][language][number]);
             MyStyle = json[DbName][style].Deserialize<Style>();
             showTable(myculc, CulcClass.getTitleResultCulc());
-            do
+            while (showMessage() || showMessage(CulcClass.getConfiremExit()))
             {
-                showTable(CulcClass.getOption() == "confirem" && CulcClass.getState() == "search" && number.StartsWith("&") ? CulcClass.setCulc(myculc.Find(x => x.First() == number.Substring(1)).ToList()) : CulcClass.getAddsearch(), CulcClass.getTitleTable());
-                PrintColor(number=="exit"? $"{CulcClass.getCancelExit()}\n{CulcClass.getLabel()}" : CulcClass.getLabel(), CulcClass.getOption() == "confirem" ? MyStyle.getConfirem() : (CulcClass.getOption() == "operation" ? MyStyle.getValue() : MyStyle.getOperator()));
-                number = Console.ReadLine();
-                if (number == "exit")
-                    PrintColor(CulcClass.getConfiremExit(), MyStyle.getConfirem());
+                if(number == "exit")
+                    PrintColorLine(CulcClass.getCancelExit(), MyStyle.getMessage());
                 else if (number == "add" && CulcClass.getState() == "add" || number == "search" && CulcClass.getState() == "search" || number == "edit" && CulcClass.getState() == "edit")
                     PrintColorLine(CulcClass.getActiveWindo(), MyStyle.getMessage());
                 else if (number == "add" || number == "search" || number == "edit" && EditCulc != null || CulcClass.getOption() == "confirem" && CulcClass.getState() == "search" && number == "e")
@@ -390,7 +392,8 @@ namespace tutorial_console
                     else if (CulcClass.getState() == "search")
                         PrintColorLine(CulcClass.getSearchTableMessage(), MyStyle.getMessage());
                 }
-            } while (number != "exit" || !Console.ReadLine().ToLower().StartsWith("y"));
+                showTable(CulcClass.getOption() == "confirem" && CulcClass.getState() == "search" && number.StartsWith("&") ? CulcClass.setCulc(myculc.Find(x => x.First() == number.Substring(1)).ToList()) : CulcClass.getAddsearch(), CulcClass.getTitleTable());
+            }
 
             PrintColorLine(CulcClass.getSuccessfyllyCancel(), MyStyle.getMessage());
         }
