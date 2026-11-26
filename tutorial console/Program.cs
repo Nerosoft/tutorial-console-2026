@@ -326,8 +326,9 @@ namespace tutorial_console
             //showTable(myculc, CulcClass.getTitleResultCulc());
             do
             {
-               
-                if (number == "add" || number == "search" || number == "edit" && EditCulc != null || CulcClass.getOption() == "confirem" && CulcClass.getState() == "search" && number == "e")
+                if (number == "add" && CulcClass?.getState() == "add" || number == "search" && CulcClass?.getState() == "search" || number == "edit" && CulcClass?.getState() == "edit")
+                    PrintColorLine(CulcClass.getActiveWindo(), MyStyle.getMessage());
+                else if (number == "add" || number == "search" || number == "edit" && EditCulc != null || CulcClass.getOption() == "confirem" && CulcClass.getState() == "search" && number == "e")
                 {
                      if(CulcClass == null || CulcClass.getState() == "search")
                         SearchCulc = CulcClass ?? MyClass.initCulcClass(json[DbName][language][number]);
@@ -341,9 +342,6 @@ namespace tutorial_console
                 }
                 else if (number == "exit")
                     PrintColorLine(CulcClass.getCancelExit(), MyStyle.getMessage());
-                else if (number == "add" && CulcClass.getState() == "add" || number == "search" && CulcClass.getState() == "search" || number == "edit" && CulcClass.getState() == "edit")
-                    PrintColorLine(CulcClass.getActiveWindo(), MyStyle.getMessage());
-                
                 //make search by total use max min function
                 //show table culc
                 else if (number == "lee" || CulcClass.getState() == "search" && myculc.Exists(x => number.StartsWith("<") && int.TryParse(number.Substring(1), out int val) && int.TryParse(x.Last(), out int val2) && val2 < int.Parse(number.Substring(1)) || number.StartsWith(">") && int.TryParse(number.Substring(1), out int val3) && int.TryParse(x.Last(), out int val4) && val4 > int.Parse(number.Substring(1))))
@@ -388,6 +386,7 @@ namespace tutorial_console
                     else if (CulcClass.getState() == "search")
                         PrintColorLine(CulcClass.getSearchTableMessage(), MyStyle.getMessage());
                 }
+
                 showTable(CulcClass.getOption() == "confirem" && CulcClass.getState() == "search" && number.StartsWith("&") ? CulcClass.setCulc(myculc.Find(x => x.First() == number.Substring(1)).ToList()) : CulcClass.getAddsearch(), CulcClass.getTitleTable());
                 PrintColor(CulcClass.getLabel(), CulcClass.getOption() == "confirem" ? MyStyle.getConfirem() : (CulcClass.getOption() == "operation" ? MyStyle.getValue() : MyStyle.getOperator()));
             } while ((number = Console.ReadLine()) != "exit" || PrintColor(CulcClass.getConfiremExit(), MyStyle.getConfirem()) && Console.ReadLine().ToLower() != "y");
